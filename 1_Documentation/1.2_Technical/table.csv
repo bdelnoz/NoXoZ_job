@@ -1,0 +1,12 @@
+﻿Modèle,Taille,Contexte max (tokens),Usage recommandé,Commande ollama pull
+dbrx:132b,132B,128,000,Analyse de très longs documents, recherche,ollama pull dbrx:132b
+mixtral:8x22b,22B (MoE),64,000,Tâches complexes, multilingue,ollama pull mixtral:8x22b
+llama3:70b,70B,32,000,Génération de texte avancée, raisonnement,ollama pull llama3:70b
+yi:34b,34B,32,000,Documents techniques, code,ollama pull yi:34b
+qwen:72b,72B,32,000,Multilingue (chinois, anglais, français),ollama pull qwen:72b
+deepseek:67b,67B,32,000,Code, analyse technique,ollama pull deepseek:67b
+mixtral:8x7b,7B (MoE),32,000,Équilibre performance/ressources,ollama pull mixtral:8x7b
+llama2:70b,70B,4,096,Usage général (limité par Ollama),ollama pull llama2:70b
+mistral:7b,7B,8,192,Rapidité, usage local léger,ollama pull mistral:7b
+phi3:3.8b,3.8B,128,000,Meilleur rapport taille/contexte,ollama pull phi3:3.8b
+gemma2:9b,9B,8,192,Léger et efficace,ollama pull gemma2:9b
