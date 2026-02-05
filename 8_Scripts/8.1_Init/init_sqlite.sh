@@ -2,33 +2,34 @@
 # PATH: /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/8_Scripts/8.1_Init/init_sqlite.sh
 # Auteur: Bruno DELNOZ
 # Email: bruno.delnoz@protonmail.com
-# Version: v1.2.0 – 2026-02-05
-# Target usage: Initialisation complète de SQLite pour NoXoZ_job avec contrôle groupe et permissions
-# execution 10.0
+# Version: v1.4.0 – 2026-02-05
+# Target usage: Initialisation complète de SQLite pour NoXoZ_job avec lien absolu et permissions groupe nox
 # Changelog:
 #   v1.0.0 – Création initiale
 #   v1.1.0 – Installation sqlite3
-#   v1.2.0 – Gestion des utilisateurs/groupe et permissions 770
+#   v1.2.0 – Permissions 770 et groupe nox
+#   v1.3.0 – Lien symbolique absolu
+#   v1.4.0 – Respect strict des règles de scripting et commentaires détaillés
 
-# --- HELP / Usage ---
+# ----------------------------------------------------------------------
+# FONCTION HELP
+# ----------------------------------------------------------------------
 function show_help() {
     echo "Usage: $0 [--simulate]"
     echo
-    echo "Options:"
-    echo "  --help, -h       Affiche cette aide"
-    echo "  --simulate, -s   Dry-run, affiche les actions sans les exécuter"
+    echo "Ce script initialise la base SQLite du projet NoXoZ_job."
+    echo "Il crée le dossier de stockage bigfiles, la DB, les tables,"
+    echo "et un lien symbolique absolu dans le projet."
     echo
-    echo "Ce script:"
-    echo "  - Installe sqlite3 si absent"
-    echo "  - Crée le dossier pour SQLite dans /mnt/data1_100g/agent_llm_local/sqlite"
-    echo "  - Crée la base noxoz_metadata.db si inexistante"
-    echo "  - Crée le lien symbolique dans 3_Data/Metadata/"
-    echo "  - Initialise les tables SQLite pour CV, chat, documents générés, embeddings"
-    echo "  - Assigne propriétaire et groupe 'nox', permissions 770"
+    echo "Options:"
+    echo "  --help, -h       Affiche cette aide et les options"
+    echo "  --simulate, -s   Dry-run, affiche toutes les actions sans les exécuter"
     exit 0
 }
 
-# --- Arguments ---
+# ----------------------------------------------------------------------
+# PARSING DES ARGUMENTS
+# ----------------------------------------------------------------------
 SIMULATE=false
 for arg in "$@"; do
     case $arg in
@@ -45,7 +46,10 @@ for arg in "$@"; do
     esac
 done
 
-# --- 0. Variables utilisateurs / groupe ---
+# ----------------------------------------------------------------------
+# 0. VARIABLES UTILISATEUR/GROUPE
+# ----------------------------------------------------------------------
+# On récupère l'utilisateur nox et son groupe nox
 USER_NOX=$(id -un nox 2>/dev/null)
 GROUP_NOX=$(getent group nox | cut -d: -f1)
 
@@ -53,9 +57,12 @@ if [ -z "$USER_NOX" ] || [ -z "$GROUP_NOX" ]; then
     echo "[ERROR] L'utilisateur ou le groupe 'nox' n'existe pas. Veuillez créer l'utilisateur et le groupe nox."
     exit 1
 fi
+
 echo "[InitSQLite] Utilisateur nox: $USER_NOX, Groupe nox: $GROUP_NOX"
 
-# --- 0a. Vérification et installation SQLite3 ---
+# ----------------------------------------------------------------------
+# 0a. Vérification et installation de sqlite3
+# ----------------------------------------------------------------------
 if ! command -v sqlite3 &> /dev/null; then
     if [ "$SIMULATE" = true ]; then
         echo "[SIMULATE] sudo apt update && sudo apt install -y sqlite3"
@@ -69,26 +76,40 @@ else
     echo "[InitSQLite] SQLite3 déjà installé."
 fi
 
-# --- 1. Chemins ---
+# ----------------------------------------------------------------------
+# 1. CHEMINS ABSOLUS ET STRUCTURE
+# ----------------------------------------------------------------------
+# Répertoire racine projet
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../" && pwd)"
+# Dossier SQLite sur bigfiles
 BIGFILES_SQLITE_DIR="/mnt/data1_100g/agent_llm_local/sqlite"
-PROJECT_META_LINK="./3_Data/Metadata/noxoz_metadata.db"
+# Nom du fichier DB
 DB_FILE="noxoz_metadata.db"
+# Chemin réel DB
 DB_PATH_REAL="${BIGFILES_SQLITE_DIR}/${DB_FILE}"
+# Dossier Metadata projet
+PROJECT_META_DIR="${PROJECT_ROOT}/3_Data/Metadata"
+# Chemin du lien symbolique absolu
+PROJECT_META_LINK="${PROJECT_META_DIR}/${DB_FILE}"
 
 echo "[InitSQLite] Chemin réel DB: $DB_PATH_REAL"
-echo "[InitSQLite] Lien symbolique projet: $PROJECT_META_LINK"
+echo "[InitSQLite] Lien symbolique projet (absolu): $PROJECT_META_LINK"
 
-# --- 2. Création du dossier bigfiles/sqlite ---
+# ----------------------------------------------------------------------
+# 2. CREATION DU DOSSIER BIGFILES/SQLITE
+# ----------------------------------------------------------------------
 if [ "$SIMULATE" = true ]; then
     echo "[SIMULATE] mkdir -p $BIGFILES_SQLITE_DIR"
 else
     mkdir -p "$BIGFILES_SQLITE_DIR"
     sudo chown "$USER_NOX:$GROUP_NOX" "$BIGFILES_SQLITE_DIR"
     sudo chmod 770 "$BIGFILES_SQLITE_DIR"
-    echo "[InitSQLite] Dossier créé et permissions appliquées: $BIGFILES_SQLITE_DIR"
+    echo "[InitSQLite] Dossier bigfiles créé et permissions appliquées: $BIGFILES_SQLITE_DIR"
 fi
 
-# --- 3. Création de la DB si inexistante ---
+# ----------------------------------------------------------------------
+# 3. CREATION DE LA DB SQLITE SI INEXISTANTE
+# ----------------------------------------------------------------------
 if [ ! -f "$DB_PATH_REAL" ]; then
     if [ "$SIMULATE" = true ]; then
         echo "[SIMULATE] touch $DB_PATH_REAL"
@@ -96,7 +117,7 @@ if [ ! -f "$DB_PATH_REAL" ]; then
         touch "$DB_PATH_REAL"
         sudo chown "$USER_NOX:$GROUP_NOX" "$DB_PATH_REAL"
         sudo chmod 770 "$DB_PATH_REAL"
-        echo "[InitSQLite] DB créée et permissions appliquées: $DB_PATH_REAL"
+        echo "[InitSQLite] DB SQLite créée et permissions appliquées: $DB_PATH_REAL"
     fi
 else
     echo "[InitSQLite] DB existe déjà: $DB_PATH_REAL"
@@ -107,8 +128,9 @@ else
     fi
 fi
 
-# --- 4. Création du lien symbolique ---
-PROJECT_META_DIR=$(dirname "$PROJECT_META_LINK")
+# ----------------------------------------------------------------------
+# 4. CREATION DU DOSSIER METADATA PROJET
+# ----------------------------------------------------------------------
 if [ ! -d "$PROJECT_META_DIR" ]; then
     if [ "$SIMULATE" = true ]; then
         echo "[SIMULATE] mkdir -p $PROJECT_META_DIR"
@@ -116,22 +138,27 @@ if [ ! -d "$PROJECT_META_DIR" ]; then
         mkdir -p "$PROJECT_META_DIR"
         sudo chown "$USER_NOX:$GROUP_NOX" "$PROJECT_META_DIR"
         sudo chmod 770 "$PROJECT_META_DIR"
-        echo "[InitSQLite] Dossier projet Metadata créé et permissions appliquées: $PROJECT_META_DIR"
+        echo "[InitSQLite] Dossier Metadata projet créé et permissions appliquées: $PROJECT_META_DIR"
     fi
 fi
 
+# ----------------------------------------------------------------------
+# 5. CREATION DU LIEN SYMBOLIQUE ABSOLU
+# ----------------------------------------------------------------------
 if [ ! -L "$PROJECT_META_LINK" ]; then
     if [ "$SIMULATE" = true ]; then
         echo "[SIMULATE] ln -s $DB_PATH_REAL $PROJECT_META_LINK"
     else
         ln -s "$DB_PATH_REAL" "$PROJECT_META_LINK"
-        echo "[InitSQLite] Lien symbolique créé: $PROJECT_META_LINK -> $DB_PATH_REAL"
+        echo "[InitSQLite] Lien symbolique absolu créé: $PROJECT_META_LINK -> $DB_PATH_REAL"
     fi
 else
     echo "[InitSQLite] Lien symbolique déjà existant: $PROJECT_META_LINK"
 fi
 
-# --- 5. Initialisation des tables SQLite ---
+# ----------------------------------------------------------------------
+# 6. INITIALISATION DES TABLES SQLITE
+# ----------------------------------------------------------------------
 SQL_COMMANDS=$(cat <<'EOF'
 CREATE TABLE IF NOT EXISTS cv (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -172,11 +199,16 @@ else
     echo "[InitSQLite] Tables SQLite créées ou déjà existantes"
 fi
 
-# --- 6. Vérification finale permissions ---
+# ----------------------------------------------------------------------
+# 7. PERMISSIONS FINALES
+# ----------------------------------------------------------------------
 if [ "$SIMULATE" = false ]; then
     sudo chown "$USER_NOX:$GROUP_NOX" "$DB_PATH_REAL"
     sudo chmod 770 "$DB_PATH_REAL"
     echo "[InitSQLite] Permissions finales appliquées (770) sur DB"
 fi
 
+# ----------------------------------------------------------------------
+# FIN
+# ----------------------------------------------------------------------
 echo "[InitSQLite] Initialisation SQLite terminée."
