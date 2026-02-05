@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - /mnt/data1_100g/agent_llm_local/models:/root/.ollama
+    ports:
+      - "11434:11434"
+  chromadb:
+    image: chromadb/chroma:latest
+    volumes:
+      - /mnt/data1_100g/agent_llm_local/vectors:/chroma/chroma
+    ports:
+      - "8000:8000"
