@@ -71,6 +71,11 @@ PyPDF2
 pdfplumber
 lxml
 markdown
+langchain
+chromadb
+unstructured
+python-docx
+PyPDF2
 EOF
 
 # Installation dépendances
