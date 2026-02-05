@@ -1,28 +1,6 @@
 
-# Architecture Complète pour un Agent Local d'AI de Gestion de Carrière
 
-## Contexte
-Ce document décrit l'architecture d'un agent local d'AI conçu pour ingérer, analyser et générer des documents professionnels (CV, lettres de motivation, emails) à partir de données personnelles et d'historiques de chat. L'objectif est de déployer cet agent dans un environnement local, avec une architecture modulaire, réutilisable et open-source.
 
----
-
-## Objectifs
-- **Ingestion de données** : CV, exports de chats (Le Chat, ChatGPT, Grok, Claude)
-- **Génération de documents** : Lettres de motivation, CV personnalisés, emails
-- **Déploiement local** : Utilisation de VirtualBox pour la virtualisation
-- **Modularité** : Pipelines, API, base de données
-- **Open-source** : Tous les codes et scripts seront hébergés sur un dépôt GitHub nommé `NoXoZ_job`
-
----
-
-## Architecture Technique
-
-### 1. Environnement de Déploiement
-- **Localisation** : `/mnt/data1_100g/agent_llm_local/`
-- **Virtualisation** : VirtualBox pour encapsuler l'environnement
-- **Système d'exploitation** : Linux (Ubuntu/Debian recommandé)
-
-### 2. Composants Principaux
 
 #### a. Base de Données
 - **Type** : PostgreSQL (open-source, robuste, support JSON)
@@ -92,25 +70,6 @@ Ce document décrit l'architecture d'un agent local d'AI conçu pour ingérer, a
 
 ---
 
-### 5. Structure du Dépôt GitHub (`NoXoZ_job`)
-
-```bash
-NoXoZ_job/
-├── README.md
-├── requirements.txt
-├── config/
-│   └── database_config.ini
-├── scripts/
-│   ├── ingestion/
-│   ├── analysis/
-│   └── generation/
-├── api/
-│   └── main.py
-├── models/
-│   └── llm/
-└── docs/
-    └── architecture.md
-```
 
 ---
 
