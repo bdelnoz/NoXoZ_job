@@ -1,8 +1,9 @@
 #!/bin/bash
-# PATH: .../init_fastapi.sh
+# PATH: /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/8_Scripts/8.1_Init/init_fastapi.sh
 # Auteur: Bruno DELNOZ
-# Version: v3.6 - Date: 2026-02-05
-# Target: FastAPI init + files + content + requirements.txt + diff check + replace all option
+# Email: bruno.delnoz@protonmail.com
+# Target usage: Initialisation complète FastAPI avec fichiers, contenu minimal, requirements.txt et checks existants
+# Version: v4.0 - Date: 2026-02-05
 # ------------------------------------------------------------------------------
 
 BASE_DIR="/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job"
@@ -13,14 +14,14 @@ EXEC=false
 SIMULATE=false
 PREREQUIS=false
 INSTALL=false
-
 REPLACE_ALL=false
 
+# Gestion arguments
 for arg in "$@"; do
     case $arg in
         --help|-h)
             echo "Usage: $0 [--exec] [--simulate] [--prerequis] [--install]"
-            echo "Options supplémentaires lors des diff : r = replace, sk = skip, ra = replace all restant"
+            echo "Options lors des diff : r = replace, sk = skip, ra = replace all restant"
             exit 0
             ;;
         --exec|-exe) EXEC=true ;;
@@ -31,13 +32,15 @@ for arg in "$@"; do
     esac
 done
 
+# Vérification prérequis
 if [ "$PREREQUIS" = true ]; then
-    echo "[CHECK] Vérification prérequis..."
+    echo "[CHECK] Vérification des prérequis..."
     command -v pipenv >/dev/null 2>&1 || echo "[WARN] pipenv non installé"
     command -v python3 >/dev/null 2>&1 || echo "[WARN] Python3 non trouvé"
     exit 0
 fi
 
+# Installation prérequis
 if [ "$INSTALL" = true ]; then
     echo "[INSTALL] Installation des prérequis..."
     sudo apt update
@@ -46,12 +49,15 @@ if [ "$INSTALL" = true ]; then
     exit 0
 fi
 
+# cd vers racine
 cd "$BASE_DIR" || { echo "Erreur cd"; exit 1; }
 
 # pipenv
+echo "[INFO] Activation pipenv shell"
 pipenv shell
 
 # requirements.txt
+echo "[INFO] Création/maj $REQ_FILE"
 cat > "$REQ_FILE" <<'EOF'
 fastapi>=0.95.0
 uvicorn>=0.21.0
@@ -67,10 +73,13 @@ lxml
 markdown
 EOF
 
+# Installation dépendances
+echo "[INFO] Installation des dépendances via requirements.txt"
 pip install -r "$REQ_FILE"
 
-# fichiers + contenu
+# Fichiers + contenu
 declare -A FILES_CONTENT
+
 FILES_CONTENT["$SRC_DIR/main_agent.py"]='from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from api.router import router as api_router
@@ -88,6 +97,7 @@ app.include_router(api_router)'
 
 FILES_CONTENT["$SRC_DIR/api/__init__.py"]=''
 FILES_CONTENT["$SRC_DIR/api/dependencies.py"]='# Placeholder pour dépendances FastAPI'
+
 FILES_CONTENT["$SRC_DIR/api/router.py"]='from fastapi import APIRouter
 from .endpoints import upload, generate, status
 
@@ -135,6 +145,7 @@ FILES_CONTENT["$SRC_DIR/services/generation.py"]='def generate_document(prompt: 
 
 FILES_CONTENT["$SRC_DIR/services/vector_store.py"]='# Placeholder pour interactions avec Chroma Vector Store + SQLite'
 
+# Création dossiers
 mkdir -p "$SRC_DIR/api/endpoints" "$SRC_DIR/services"
 
 CREATED=(); REPLACED=(); SKIPPED=()
@@ -146,29 +157,40 @@ for FILE in "${!FILES_CONTENT[@]}"; do
         if [ -z "$DIFF" ]; then
             SKIPPED+=("$FILE")
         else
-            if [ "$REPLACE_ALL" = true ]; then
-                echo "$CONTENT" > "$FILE"
+            echo "-------------------------"
+            echo "Diff trouvé pour $FILE :"
+            echo "$DIFF"
+            if [ "$SIMULATE" = true ]; then
+                echo "[SIMULATE] Remplacement proposé pour $FILE (non exécuté)"
                 REPLACED+=("$FILE")
             else
-                echo "Diff trouvé pour $FILE :"
-                echo "$DIFF"
-                echo "Remplacer (r), skip (sk), replace all restant (ra)? [r/sk/ra]"
-                read -r CHOICE
-                if [ "$CHOICE" = "r" ]; then
+                if [ "$REPLACE_ALL" = true ]; then
                     echo "$CONTENT" > "$FILE"
                     REPLACED+=("$FILE")
-                elif [ "$CHOICE" = "ra" ]; then
-                    echo "$CONTENT" > "$FILE"
-                    REPLACED+=("$FILE")
-                    REPLACE_ALL=true
                 else
-                    SKIPPED+=("$FILE")
+                    echo "Remplacer (r), skip (sk), replace all restant (ra)? [r/sk/ra]"
+                    read -r CHOICE
+                    if [ "$CHOICE" = "r" ]; then
+                        echo "$CONTENT" > "$FILE"
+                        REPLACED+=("$FILE")
+                    elif [ "$CHOICE" = "ra" ]; then
+                        echo "$CONTENT" > "$FILE"
+                        REPLACED+=("$FILE")
+                        REPLACE_ALL=true
+                    else
+                        SKIPPED+=("$FILE")
+                    fi
                 fi
             fi
         fi
     else
-        echo "$CONTENT" > "$FILE"
-        CREATED+=("$FILE")
+        if [ "$SIMULATE" = true ]; then
+            echo "[SIMULATE] Création proposée de $FILE"
+            CREATED+=("$FILE")
+        else
+            echo "$CONTENT" > "$FILE"
+            CREATED+=("$FILE")
+        fi
     fi
 done
 
