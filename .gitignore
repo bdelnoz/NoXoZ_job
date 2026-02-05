@@ -1,0 +1,32 @@
+# Logs
+logs/
+
+# Outputs
+outputs/
+
+# Results
+results/
+
+# Infos
+infos/
+
+# Fichiers temporaires
+*.tmp
+*.log
+*.bak
+
+
+# ========================================
+# Template: shell
+# Added: 2026-02-04 22:19:59
+# ========================================
+logs/
+output/
+infos/
+result/
+results/
+backup/
+*.log
+*.zip
+*.tar.gz
+*.rar
