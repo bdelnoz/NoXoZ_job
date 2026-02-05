@@ -1,0 +1,1 @@
+# Placeholder pour dépendances FastAPI
