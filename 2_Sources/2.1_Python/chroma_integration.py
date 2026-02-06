@@ -3,125 +3,132 @@
 # Auteur: Bruno DELNOZ
 # Email: bruno.delnoz@protonmail.com
 # Target usage: Intégration et gestion de Chroma Vector Store pour NoXoZ_job
-# Version: v1.0 – Date: 2026-02-06
+# Version: v2.0 – Date: 2026-02-06
 # Changelog:
-#   v1.0 – 2026-02-06 – Implémentation initiale de Chroma pour ingestion, stockage et recherche vectorielle
+#   v2.0 – 2026-02-06 – Migration vers le nouveau client PersistentClient de Chroma
 
 """
-Chroma Integration Module – NoXoZ_job
+ChromaDB Integration – NoXoZ_job (nouvelle API)
 
-Ce module permet :
-- Initialisation d’un Chroma Vector Store persistant (avec SQLite pour métadonnées)
-- Ingestion de documents (PDF, DOCX, MD, JSON, TXT)
-- Génération et stockage d’embeddings via OpenAIEmbeddings / modèles locaux
-- Recherche vectorielle et récupération de documents similaires
+Fonctions:
+- Initialisation d’un ChromaDB persistant avec PersistentClient
+- Ingestion de documents multi-format
+- Recherche vectorielle de documents similaires
 """
 
 import os
 from pathlib import Path
-from typing import List, Optional
-from langchain.vectorstores import Chroma
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.document_loaders import (
-    PyPDFLoader,
-    DocxLoader,
-    TextLoader,
-    UnstructuredMarkdownLoader
-)
-from langchain.schema import Document
+from typing import List
+import chromadb
+from chromadb.utils import embedding_functions
 
 # =========================
 # CONFIGURATION DES PATHS
 # =========================
-BASE_DIR = Path(__file__).resolve().parent.parent.parent  # /2_Sources
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = BASE_DIR / "3_Data"
 VECTORS_DIR = DATA_DIR / "3.1_Vectors" / "chroma_link"
-METADATA_DIR = DATA_DIR / "3.2_Metadata"
-PERSIST_DIR = VECTORS_DIR  # Chroma persistant ici
-
-# Création des dossiers si inexistants
 VECTORS_DIR.mkdir(parents=True, exist_ok=True)
-METADATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # =========================
-# INITIALISATION DU VECTOR STORE
+# INITIALISATION DU CLIENT CHROMA
 # =========================
-def init_chroma_store(persist_directory: Path = PERSIST_DIR) -> Chroma:
+def init_chroma_client(persist_directory: Path = VECTORS_DIR):
     """
-    Initialise ou charge un Chroma Vector Store existant
+    Initialise le client ChromaDB persistant avec la nouvelle API
     """
-    print(f"[Chroma] Initialisation du Vector Store dans {persist_directory}")
-    embeddings = OpenAIEmbeddings()
-    store = Chroma(
-        persist_directory=str(persist_directory),
-        embedding_function=embeddings,
-        collection_name="noxoz_documents"
-    )
-    return store
+    print(f"[Chroma] Initialisation du PersistentClient dans {persist_directory}")
+    client = chromadb.PersistentClient(path=str(persist_directory))
+    collection = client.get_or_create_collection("noxoz_documents")
+    return client, collection
 
 # =========================
-# FONCTIONS D’INGESTION DE DOCUMENTS
+# CHARGEMENT DE DOCUMENTS
 # =========================
-def load_document(file_path: str) -> List[Document]:
+def load_document(file_path: str) -> List[str]:
     """
-    Charge un document selon son type et retourne une liste de Documents LangChain
+    Charge le contenu d’un document en texte brut
     """
+    from PyPDF2 import PdfReader
+    import docx
+
     ext = Path(file_path).suffix.lower()
     print(f"[Chroma] Chargement du fichier {file_path} (extension: {ext})")
+
     if ext == ".pdf":
-        loader = PyPDFLoader(file_path)
+        reader = PdfReader(file_path)
+        text = "\n".join([page.extract_text() or "" for page in reader.pages])
+        return [text]
     elif ext == ".docx":
-        loader = DocxLoader(file_path)
-    elif ext == ".md":
-        loader = UnstructuredMarkdownLoader(file_path)
-    elif ext in [".txt", ".json", ".xml"]:
-        loader = TextLoader(file_path, encoding="utf-8")
+        doc = docx.Document(file_path)
+        text = "\n".join([p.text for p in doc.paragraphs])
+        return [text]
+    elif ext in [".md", ".txt", ".json", ".xml"]:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return [f.read()]
     else:
         raise ValueError(f"Format non supporté: {ext}")
-    return loader.load()
 
-def ingest_documents(file_paths: List[str], store: Chroma) -> None:
+# =========================
+# INGESTION DE DOCUMENTS
+# =========================
+def ingest_documents(file_paths: List[str], collection):
     """
-    Ingestion de plusieurs fichiers dans le Chroma Vector Store
+    Ajoute les documents dans la collection ChromaDB avec embeddings
     """
-    for file_path in file_paths:
+    embedding_fn = embedding_functions.OpenAIEmbeddingFunction(api_key="")  # remplacer par modèle local si besoin
+
+    for idx, file_path in enumerate(file_paths, start=1):
         try:
-            documents = load_document(file_path)
-            store.add_documents(documents)
-            print(f"[Chroma] {len(documents)} documents ingérés depuis {file_path}")
+            texts = load_document(file_path)
+            ids = [f"{Path(file_path).stem}_{i}" for i in range(len(texts))]
+            metadatas = [{"source": file_path} for _ in texts]
+            collection.add(
+                documents=texts,
+                metadatas=metadatas,
+                ids=ids,
+                embedding_function=embedding_fn
+            )
+            print(f"[Chroma] Ingesté {len(texts)} documents depuis {file_path}")
         except Exception as e:
-            print(f"[Chroma] Erreur lors de l’ingestion de {file_path} : {e}")
-    store.persist()
-    print("[Chroma] Persistance du store terminée.")
+            print(f"[Chroma] Erreur ingestion {file_path}: {e}")
+
+    print("[Chroma] Persistance du store terminée")
+    collection.client.persist()
 
 # =========================
-# FONCTION DE RECHERCHE VECTORIELLE
+# RECHERCHE VECTORIELLE
 # =========================
-def search_similar(query: str, store: Chroma, k: int = 5) -> List[Document]:
+def search_similar(query: str, collection, k: int = 5):
     """
-    Recherche vectorielle dans le store Chroma
+    Recherche k documents les plus similaires à la query
     """
-    print(f"[Chroma] Recherche de {k} documents similaires pour la requête : {query}")
-    results = store.similarity_search(query, k=k)
-    print(f"[Chroma] {len(results)} résultats trouvés")
-    return results
+    embedding_fn = embedding_functions.OpenAIEmbeddingFunction(api_key="")  # remplacer par modèle local
+    results = collection.query(
+        query_texts=[query],
+        n_results=k,
+        include=["metadatas", "documents"],
+        embedding_function=embedding_fn
+    )
+    documents = results['documents'][0]
+    metadatas = results['metadatas'][0]
+    for idx, (doc, meta) in enumerate(zip(documents, metadatas), start=1):
+        print(f"Result {idx} – source: {meta['source']}\n{doc[:200]}...\n")
+    return documents
 
 # =========================
-# EXEMPLE D’UTILISATION
+# MAIN / EXEMPLE D’UTILISATION
 # =========================
 if __name__ == "__main__":
-    # Initialisation du store
-    store = init_chroma_store()
+    client, collection = init_chroma_client()
 
-    # Ingestion d’exemples
+    # Exemple d’ingestion
     example_files = [
         str(BASE_DIR / "2.1_Python" / "examples" / "cv_example.pdf"),
         str(BASE_DIR / "2.1_Python" / "examples" / "doc_example.docx")
     ]
-    ingest_documents(example_files, store)
+    ingest_documents(example_files, collection)
 
-    # Recherche
+    # Exemple de recherche
     query = "Expérience en Python et IA"
-    results = search_similar(query, store, k=3)
-    for idx, doc in enumerate(results, start=1):
-        print(f"Result {idx}: {doc.page_content[:200]}...\n")
+    search_similar(query, collection, k=3)
