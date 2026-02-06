@@ -21,3 +21,7 @@ def status():
         })
     except Exception as e:
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+# Endpoint health
+@router.get("/health")
+async def health_status():
+    return JSONResponse({"status": "ok", "endpoint": "status"})

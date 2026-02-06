@@ -8,7 +8,11 @@ import sqlite3
 from pathlib import Path
 from typing import List, Dict
 import chromadb
-from langchain.embeddings import HuggingFaceEmbeddings
+# Ancien
+# from langchain.embeddings import HuggingFaceEmbeddings
+# Nouveau (LangChain 1.x)
+# from langchain.embeddings.huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from PyPDF2 import PdfReader
 import docx
 

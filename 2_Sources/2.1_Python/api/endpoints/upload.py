@@ -11,3 +11,7 @@ async def upload_file(file: UploadFile = File(...)):
         return JSONResponse({"status": "success", "filename": file.filename, "result": result})
     except Exception as e:
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+# Endpoint health
+@router.get("/health")
+async def health_upload():
+    return JSONResponse({"status": "ok", "endpoint": "upload"})

@@ -1,115 +1,109 @@
 #!/bin/bash
 ################################################################################
-# PATH: /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/8_Scripts/8.1_Init/start_fastapi.sh
+# PATH: start_fastapi.sh
 # Auteur: Bruno DELNOZ
-# Email: bruno.delnoz@protonmail.com
-# Target usage: Démarrage / arrêt / statut FastAPI NoXoZ_job avec gestion de port et --force
-# Version: v1.3.0 – 2026-02-06
+# Objectif: Gestion FastAPI (start/stop/restart/status) fiable
+# Version: v3.1.0 – corrigé
 ################################################################################
+set -euo pipefail
+
+### CONFIG ###
+APP_MODULE="main_agent:app"       # <-- corrigé
+HOST="127.0.0.1"
+PORT="8443"
 
 BASE_DIR="/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job"
+SRC_DIR="$BASE_DIR/2_Sources/2.1_Python"   # <-- répertoire du main_agent.py
 LOG_DIR="$BASE_DIR/4_Logs"
-SCRIPT_NAME="start_fastapi"
-SCRIPT_VERSION="v1.3.0"
+PID_FILE="$BASE_DIR/fastapi.pid"
+
+CERT_FILE="$BASE_DIR/certs/cert.pem"
+KEY_FILE="$BASE_DIR/certs/key.pem"
+
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-LOG_FILE="$LOG_DIR/log.${SCRIPT_NAME}.${TIMESTAMP}.${SCRIPT_VERSION}.log"
+LOG_FILE="$LOG_DIR/log.start_fastapi.$TIMESTAMP.log"
 
-EXEC=false
-STOP=false
-FORCE=false
-STATUS=false
-
-show_help() {
-cat <<EOF
-Usage: $0 [OPTIONS]
-
-OPTIONS:
-  --help, -h      Affiche cette aide
-  --exec, -exe    Démarre FastAPI
-  --stop, -s      Arrête FastAPI
-  --force, -f     Force kill PID bloquant le port
-  --status, -st   Affiche le statut actuel de FastAPI
-Exemples:
-  $0 --exec
-  $0 --exec --force
-  $0 --stop
-  $0 --status
-EOF
+### UTILS ###
+is_running() {
+  [[ -f "$PID_FILE" ]] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null
 }
 
-# ----------------------------
-# Parsing arguments
-# ----------------------------
-for arg in "$@"; do
-    case "$arg" in
-        --help|-h) show_help; exit 0 ;;
-        --exec|-exe) EXEC=true ;;
-        --stop|-s) STOP=true ;;
-        --force|-f) FORCE=true ;;
-        --status|-st) STATUS=true ;;
-        *) echo "[ERROR] Argument inconnu: $arg"; exit 1 ;;
-    esac
-done
+### ACTIONS ###
+start() {
+  if is_running; then
+    echo "[ERROR] FastAPI déjà actif (PID $(cat "$PID_FILE"))"
+    exit 1
+  fi
 
-mkdir -p "$LOG_DIR"
-cd "$BASE_DIR" || { echo "[ERROR] Impossible de cd"; exit 1; }
+  echo "[INFO] Démarrage FastAPI (HTTPS uniquement)"
+  echo "[INFO] Log : $LOG_FILE"
 
-# ----------------------------
-# Status check
-# ----------------------------
-if [ "$STATUS" = true ]; then
-    PORT_PID=$(lsof -ti:11111)
-    if [ -n "$PORT_PID" ]; then
-        echo "[STATUS] FastAPI actif sur le port 11111, PID(s) : $PORT_PID"
-    else
-        echo "[STATUS] FastAPI non lancé"
-    fi
+  # Aller dans le répertoire où se trouve main_agent.py
+  cd "$SRC_DIR"
+
+  # Active pipenv si présent
+  if command -v pipenv >/dev/null 2>&1; then
+    exec_cmd="pipenv run uvicorn  --reload"
+  else
+    exec_cmd="uvicorn  --reload "
+  fi
+
+  nohup $exec_cmd "$APP_MODULE" \
+    --host "$HOST" \
+    --port "$PORT" \
+    --ssl-certfile "$CERT_FILE" \
+    --ssl-keyfile "$KEY_FILE" \
+    > "$LOG_FILE" 2>&1 &
+
+  echo $! > "$PID_FILE"
+
+  sleep 1
+  if is_running; then
+    echo "[INFO] FastAPI démarré avec PID $(cat "$PID_FILE")"
+    echo "URL: https://$HOST:$PORT"
+  else
+    echo "[ERROR] Échec du démarrage"
+    rm -f "$PID_FILE"
+    exit 1
+  fi
+}
+
+stop() {
+  if ! is_running; then
+    echo "[INFO] Aucun FastAPI actif"
+    rm -f "$PID_FILE"
     exit 0
-fi
+  fi
 
-# ----------------------------
-# Stop server
-# ----------------------------
-if [ "$STOP" = true ]; then
-    PORT_PID=$(lsof -ti:11111)
-    if [ -n "$PORT_PID" ]; then
-        echo "[STOP] Kill PID(s) sur port 11111 : $PORT_PID"
-        kill -9 $PORT_PID
-        sleep 1
-        echo "[INFO] Serveur FastAPI arrêté"
-    else
-        echo "[INFO] Aucun FastAPI actif"
-    fi
-    exit 0
-fi
+  PID="$(cat "$PID_FILE")"
+  echo "[INFO] Arrêt FastAPI PID $PID"
+  kill "$PID"
+  sleep 1
 
-# ----------------------------
-# Force kill si demandé
-# ----------------------------
-if [ "$FORCE" = true ]; then
-    PORT_PID=$(lsof -ti:11111)
-    if [ -n "$PORT_PID" ]; then
-        echo "[FORCE] Kill PID(s) sur port 11111 : $PORT_PID"
-        kill -9 $PORT_PID
-        sleep 1
-    fi
-fi
+  if kill -0 "$PID" 2>/dev/null; then
+    echo "[WARN] Process encore actif, kill -9"
+    kill -9 "$PID"
+  fi
 
-# ----------------------------
-# Start server
-# ----------------------------
-if [ "$EXEC" = true ]; then
-    export PYTHONPATH="$BASE_DIR/2_Sources/2.1_Python:$PYTHONPATH"
-    echo "[INFO] Démarrage FastAPI, log : $LOG_FILE"
-    uvicorn main_agent:app --host 127.0.0.1 --port 11111 --reload > "$LOG_FILE" 2>&1 &
-    API_PID=$!
-    sleep 3
-    if ps -p $API_PID >/dev/null; then
-        echo "[INFO] FastAPI démarré (PID=$API_PID)"
-        echo "URL: http://127.0.0.1:11111"
-    else
-        echo "[ERROR] FastAPI n'a pas pu démarrer"
-        echo "Voir log : $LOG_FILE"
-        exit 1
-    fi
-fi
+  rm -f "$PID_FILE"
+  echo "[INFO] FastAPI arrêté"
+}
+
+status() {
+  if is_running; then
+    echo "[STATUS] FastAPI actif, PID $(cat "$PID_FILE")"
+  else
+    echo "[STATUS] FastAPI non lancé"
+  fi
+}
+
+### MAIN ###
+case "${1:-}" in
+  start)  start ;;
+  stop)   stop ;;
+  status) status ;;
+  *)
+    echo "Usage: $0 {start|stop|status}"
+    exit 1
+    ;;
+esac

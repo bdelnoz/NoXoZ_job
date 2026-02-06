@@ -1,7 +1,8 @@
 from fastapi import APIRouter
-from .endpoints import upload, generate, status
+from api.endpoints import generate, status, upload, status_web
 
 router = APIRouter()
+router.include_router(generate.router, prefix="/generate", tags=["Generate"])
+router.include_router(status.router, prefix="/status", tags=["Status"])
 router.include_router(upload.router, prefix="/upload", tags=["Upload"])
-router.include_router(generate.router, prefix="/generate", tags=["Génération"])
-router.include_router(status.router, prefix="/status", tags=["Statut"])
+router.include_router(status_web.router, prefix="/monitor", tags=["Monitor"])
