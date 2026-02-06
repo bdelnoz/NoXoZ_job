@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "24aceef1cb860e5a23da5216f769f483c9a7f6b7e9f154b13e5d023049354adc"
+            "sha256": "d6d15ee47786e12994e01f35724a829d9fe158802744a8f88d2b98d2bcb91ee5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -547,6 +547,14 @@
             "markers": "python_version >= '3.9'",
             "version": "==0.128.2"
         },
+        "ffmpeg-python": {
+            "hashes": [
+                "sha256:65225db34627c578ef0e11c8b1eb528bb35e024752f6f10b78c011f6f64c4127",
+                "sha256:ac441a0404e053f8b6a1113a77c0f452f1cfc62f6344a769475ffdc0f56c23c5"
+            ],
+            "index": "pypi",
+            "version": "==0.2.0"
+        },
         "filelock": {
             "hashes": [
                 "sha256:18c57ee915c7ec61cff0ecf7f0f869936c7c30191bb0cf406f1341778d0834e1",
@@ -579,6 +587,14 @@
             "index": "pypi",
             "markers": "python_version >= '3.10'",
             "version": "==2026.2.0"
+        },
+        "future": {
+            "hashes": [
+                "sha256:929292d34f5872e70396626ef385ec22355a1fae8ad29e1a734c3e43f9fbc216",
+                "sha256:bd2968309307861edae1458a4f8a4f3598c03be43b97521076aebf5d94c07b05"
+            ],
+            "markers": "python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "version": "==1.0.0"
         },
         "googleapis-common-protos": {
             "hashes": [

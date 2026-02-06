@@ -11,7 +11,7 @@ fastapi = ">=0.95.0"
 uvicorn = ">=0.40.0"
 sentence-transformers = ">=2.2.2"
 torch = "*"
-transformers = ">=4.33.0"
+transformers = "*"
 aiofiles = ">=25.1.0"
 annotated-doc = ">=0.0.4"
 annotated-types = ">=0.7.0"
@@ -146,6 +146,7 @@ wrapt = ">=2.1.1"
 xxhash = ">=3.6.0"
 zipp = ">=3.23.0"
 zstandard = ">=0.25.0"
+ffmpeg-python = "*"
 
 [dev-packages]
 
