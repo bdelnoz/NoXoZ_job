@@ -540,12 +540,12 @@
         },
         "fastapi": {
             "hashes": [
-                "sha256:c8cdf7c2182c9a06bf9cfa3329819913c189dc86389b90d5709892053582db29",
-                "sha256:ed99383fd96063447597d5aa2a9ec3973be198e3b4fc10c55f15c62efdb21c60"
+                "sha256:9321282cee605fd2075ccbc95c0f2e549d675c59de4a952bba202cd1730ac66b",
+                "sha256:d6a2cc4c0edfbb2499f3fdec55ba62e751ee58a6354c50f85ed0dabdfbcfeb60"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==0.128.3"
+            "version": "==0.128.4"
         },
         "ffmpeg-python": {
             "hashes": [
@@ -3304,11 +3304,11 @@
         },
         "setuptools": {
             "hashes": [
-                "sha256:8b0e9d10c784bf7d262c4e5ec5d4ec94127ce206e8738f29a437945fbc219b70",
-                "sha256:95b30ddfb717250edb492926c92b5221f7ef3fbcc2b07579bcd4a27da21d0173"
+                "sha256:487b53915f52501f0a79ccfd0c02c165ffe06631443a886740b91af4b7a5845a",
+                "sha256:fdd925d5c5d9f62e4b74b30d6dd7828ce236fd6ed998a08d81de62ce5a6310d6"
             ],
             "markers": "python_version >= '3.12'",
-            "version": "==80.10.2"
+            "version": "==81.0.0"
         },
         "shellingham": {
             "hashes": [
@@ -3423,12 +3423,12 @@
         },
         "tenacity": {
             "hashes": [
-                "sha256:51171cfc6b8a7826551e2f029426b10a6af189c5ac6986adcd7eb36d42f17954",
-                "sha256:a6724c947aa717087e2531f883bde5c9188f603f6669a9b8d54eb998e604c12a"
+                "sha256:6095a360c919085f28c6527de529e76a06ad89b23659fa881ae0649b867a9d55",
+                "sha256:adb31d4c263f2bd041081ab33b498309a57c77f9acf2db65aadf0898179cf93a"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==9.1.3"
+            "version": "==9.1.4"
         },
         "threadpoolctl": {
             "hashes": [
