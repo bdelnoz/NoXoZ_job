@@ -24,7 +24,7 @@ def generate_document(prompt: str, template: str = "default"):
 
     # Appel de Ollama (exemple avec Mistral-7B)
     result = subprocess.run(
-        ["ollama", "generate", "Mistral-7B", full_prompt],
+        ["ollama", "run", "mistral:7b", "--", full_prompt],
         capture_output=True,
         text=True
     )
