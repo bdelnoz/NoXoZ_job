@@ -1,21 +1,7 @@
-# Logs
-logs/
-
-# Outputs
-outputs/
-
-# Results
-results/
-
-# Infos
-infos/
-
 # Fichiers temporaires
 *.tmp
 *.log
 *.bak
-
-
 # ========================================
 # Template: shell
 # Added: 2026-02-04 22:19:59
@@ -30,36 +16,17 @@ backup/
 *.zip
 *.tar.gz
 *.rar
-
-# ========================================
-# Template: shell
-# Added: 2026-02-05 01:34:23
-# ========================================
-logs/
-output/
-infos/
-result/
-results/
-backup/
-*.log
-*.zip
-*.tar.gz
-*.rar
-
 # ========================================
 # Template: python
 # Added: 2026-02-05 01:34:24
 # ========================================
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-
 # C extensions
 *.so
-
 # Distribution / packaging
 .Python
 build/
