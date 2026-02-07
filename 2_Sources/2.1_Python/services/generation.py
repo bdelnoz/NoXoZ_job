@@ -27,9 +27,15 @@ def generate_document(prompt: str, template: str = "default"):
     result = subprocess.run(
         ["ollama", "run", "mistral:7b", "--", full_prompt],
         capture_output=True,
-        text=True
+        text=True,
+        timeout=120
     )
-    generated_text = result.stdout
+    if result.returncode != 0:
+        error_detail = result.stderr.strip() or "Erreur inconnue Ollama"
+        raise RuntimeError(f"Ollama a échoué: {error_detail}")
+    generated_text = result.stdout.strip()
+    if not generated_text:
+        raise RuntimeError("Ollama n'a renvoyé aucun contenu.")
 
     # Écriture dans un DOCX
     doc = Document()
