@@ -1,0 +1,136 @@
+[4.0K]  .
+├── [4.0K]  10_Runs
+├── [4.0K]  1_Documentation
+│   ├── [4.0K]  1.1_General
+│   │   ├── [7.3K]  ARCHITECTURE.md
+│   │   ├── [ 36K]  INSTALL.docx
+│   │   ├── [2.6K]  ollama-models-guide.md
+│   │   └── [ 36K]  WHY.docx
+│   └── [4.0K]  1.2_Technical
+│       ├── [ 36K]  API_SPECIFICATIONS.docx
+│       ├── [6.4K]  COMPOSANTS.csv
+│       ├── [8.2K]  OLLAMA_all_models_with_token_limits.md
+│       ├── [8.3K]  OLLAMA_commandes.md
+│       ├── [1.1K]  structure.md
+│       └── [ 945]  table.csv
+├── [4.0K]  2_Sources
+│   ├── [4.0K]  2.1_Python
+│   │   ├── [4.0K]  3_Data
+│   │   │   ├── [4.0K]  3.1_Vectors
+│   │   │   │   └── [4.0K]  chroma_link
+│   │   │   └── [4.0K]  3.2_Metadata
+│   │   │       └── [   0]  metadata.db
+│   │   ├── [4.0K]  api
+│   │   │   ├── [  40]  dependencies.py
+│   │   │   ├── [4.0K]  endpoints
+│   │   │   │   ├── [3.6K]  fastapi_full_monitor.py
+│   │   │   │   ├── [ 632]  generate.py
+│   │   │   │   ├── [4.0K]  __pycache__
+│   │   │   │   │   └── [1.0K]  generate.cpython-313.pyc
+│   │   │   │   ├── [ 834]  status.py
+│   │   │   │   ├── [3.6K]  status_web.py
+│   │   │   │   └── [ 636]  upload.py
+│   │   │   ├── [   1]  __init__.py
+│   │   │   ├── [1.3K]  monitor.py
+│   │   │   ├── [4.0K]  __pycache__
+│   │   │   │   ├── [ 187]  __init__.cpython-313.pyc
+│   │   │   │   └── [ 803]  router.cpython-313.pyc
+│   │   │   └── [ 415]  router.py
+│   │   ├── [4.6K]  chroma_integration.py
+│   │   ├── [ 464]  main_agent.py
+│   │   ├── [4.0K]  __pycache__
+│   │   │   └── [ 688]  main_agent.cpython-313.pyc
+│   │   ├── [4.0K]  routers
+│   │   ├── [4.0K]  services
+│   │   │   ├── [1.2K]  generation.py
+│   │   │   ├── [ 674]  ingestion.py
+│   │   │   ├── [4.0K]  __pycache__
+│   │   │   │   ├── [1.9K]  generation.cpython-313.pyc
+│   │   │   │   └── [5.2K]  vector_store.cpython-313.pyc
+│   │   │   └── [3.3K]  vector_store.py
+│   │   ├── [  61]  temp.py
+│   │   ├── [2.4K]  test_db_huffing.py
+│   │   └── [ 236]  test_sentence_transfomers.py
+│   ├── [4.0K]  2.2_Bash
+│   │   └── [   0]  create_structure.sh
+│   ├── [4.0K]  5_Outputs
+│   │   └── [4.0K]  DOCX
+│   └── [140K]  out.txt
+├── [4.0K]  3_Data
+│   ├── [4.0K]  3.1_Vectors
+│   │   ├── [  39]  chroma_link -> /mnt/data1_100g/agent_llm_local/vectors
+│   │   └── [  38]  models_link -> /mnt/data1_100g/agent_llm_local/models
+│   ├── [4.0K]  3.2_Metadata
+│   ├── [4.0K]  Metadata
+│   │   └── [  56]  noxoz_metadata.db -> /mnt/data1_100g/agent_llm_local/sqlite/noxoz_metadata.db
+│   └── [4.0K]  models
+│       └── [4.0K]  huggingface_embeddings
+│           └── [  55]  all-MiniLM-L6-v2 -> /mnt/data1_100g/agent_llm_local/models/all-MiniLM-L6-v2
+├── [4.0K]  4_Logs
+│   └── [   0]  init.txt
+├── [4.0K]  5_Outputs
+│   ├── [4.0K]  5.1_DOCX
+│   ├── [4.0K]  5.2_PDF
+│   ├── [   0]  init.txt
+│   ├── [  24]  outputs.md
+│   └── [ 253]  out.txt
+├── [4.0K]  6_Results
+│   ├── [4.0K]  6.1_Bugs
+│   ├── [4.0K]  6.2_Innovations
+│   └── [   0]  init.txt
+├── [4.0K]  7_Infos
+│   ├── [ 924]  PERMANENT_MEMORY.md
+│   └── [   0]  tree.txt
+├── [4.0K]  8_Scripts
+│   ├── [4.0K]  8.1_Init
+│   │   ├── [9.4K]  config_paths.sh
+│   │   ├── [   0]  create-repo.sh
+│   │   ├── [1.5K]  fix_ollama_group_permissions.sh
+│   │   ├── [6.5K]  init_fastapi.sh
+│   │   ├── [ 10K]  init_project.sh
+│   │   ├── [ 583]  init_python.sh
+│   │   ├── [7.7K]  init_sqlite.sh
+│   │   ├── [4.0K]  logs
+│   │   ├── [4.0K]  old_versions
+│   │   │   └── [   0]  all_my_scripts.old_versions.txt
+│   │   ├── [9.7K]  ollama-batch-download.sh
+│   │   ├── [2.2K]  reset_ollama_service.sh
+│   │   ├── [4.0K]  results
+│   │   │   └── [ 466]  downloaded-models.ollama-batch-download.v1.0.txt
+│   │   ├── [4.0K]  service.fastapi
+│   │   │   ├── [4.1K]  install_service.sh
+│   │   │   ├── [ 869]  noxoz_job.fastapi.service
+│   │   │   ├── [5.0K]  start_fastapi.sh
+│   │   │   └── [1.9K]  uninstall_service.sh
+│   │   ├── [4.0K]  service.ollama
+│   │   │   ├── [2.1K]  install_service.sh
+│   │   │   ├── [1.0K]  noxoz_job.ollama.service
+│   │   │   ├── [3.5K]  start_ollama.sh
+│   │   │   └── [1.6K]  uninstall_service.sh
+│   │   ├── [4.0K]  service.sqlite
+│   │   ├── [7.6K]  test_fastapi.sh
+│   │   └── [7.4K]  test_sqlite.sh
+│   ├── [4.0K]  8.2_Utils
+│   │   ├── [9.3M]  argparse
+│   │   ├── [9.6K]  count_tokens.sh
+│   │   ├── [9.7M]  datetime
+│   │   ├── [9.7M]  json
+│   │   ├── [6.4K]  md_compressor.py
+│   │   ├── [9.7M]  requests
+│   │   └── [345K]  sys
+│   └── [ 39M]  out.txt
+├── [4.0K]  9_Templates
+│   └── [   0]  init.txt
+├── [4.0K]  certs
+│   ├── [1.4K]  cert.pem
+│   └── [1.7K]  key.pem
+├── [7.0K]  check_all_web_python.sh
+├── [ 327]  docker-compose.yml
+├── [   7]  fastapi.pid
+├── [3.5K]  Pipfile
+├── [306K]  Pipfile.lock
+├── [ 11K]  README.md
+├── [2.6K]  requirements.txt
+└── [ 813]  temp.py
+
+49 directories, 85 files
