@@ -1,25 +1,27 @@
-[4.0K]  .
+[4.0K]  /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/
 ├── [4.0K]  10_Runs
+│   ├── [   7]  ollama.pid
+│   └── [   7]  service.noxoz_job.ollama.pid
 ├── [4.0K]  1_Documentation
 │   ├── [4.0K]  1.1_General
 │   │   ├── [7.3K]  ARCHITECTURE.md
 │   │   ├── [ 36K]  INSTALL.docx
 │   │   ├── [2.6K]  ollama-models-guide.md
 │   │   └── [ 36K]  WHY.docx
-│   └── [4.0K]  1.2_Technical
-│       ├── [ 36K]  API_SPECIFICATIONS.docx
-│       ├── [6.4K]  COMPOSANTS.csv
-│       ├── [8.2K]  OLLAMA_all_models_with_token_limits.md
-│       ├── [8.3K]  OLLAMA_commandes.md
-│       ├── [1.1K]  structure.md
-│       └── [ 945]  table.csv
+│   ├── [4.0K]  1.2_Technical
+│   │   ├── [ 36K]  API_SPECIFICATIONS.docx
+│   │   ├── [6.4K]  COMPOSANTS.csv
+│   │   ├── [8.2K]  OLLAMA_all_models_with_token_limits.md
+│   │   ├── [8.3K]  OLLAMA_commandes.md
+│   │   ├── [5.0K]  pipenv_guide.md
+│   │   ├── [1.1K]  structure.md
+│   │   └── [ 945]  table.csv
+│   ├── [4.0K]  1.3_Status
+│   │   ├── [6.5K]  COMPOSANTS_mis_a_jour.csv
+│   │   └── [3.9K]  plan_detaille.md
+│   └── [ 48K]  out.txt
 ├── [4.0K]  2_Sources
 │   ├── [4.0K]  2.1_Python
-│   │   ├── [4.0K]  3_Data
-│   │   │   ├── [4.0K]  3.1_Vectors
-│   │   │   │   └── [4.0K]  chroma_link
-│   │   │   └── [4.0K]  3.2_Metadata
-│   │   │       └── [   0]  metadata.db
 │   │   ├── [4.0K]  api
 │   │   │   ├── [  40]  dependencies.py
 │   │   │   ├── [4.0K]  endpoints
@@ -31,11 +33,11 @@
 │   │   │   │   ├── [3.6K]  status_web.py
 │   │   │   │   └── [ 636]  upload.py
 │   │   │   ├── [   1]  __init__.py
-│   │   │   ├── [1.3K]  monitor.py
+│   │   │   ├── [7.2K]  monitor.py
 │   │   │   ├── [4.0K]  __pycache__
 │   │   │   │   ├── [ 187]  __init__.cpython-313.pyc
 │   │   │   │   └── [ 803]  router.cpython-313.pyc
-│   │   │   └── [ 415]  router.py
+│   │   │   └── [ 518]  router.py
 │   │   ├── [4.6K]  chroma_integration.py
 │   │   ├── [ 464]  main_agent.py
 │   │   ├── [4.0K]  __pycache__
@@ -53,9 +55,7 @@
 │   │   └── [ 236]  test_sentence_transfomers.py
 │   ├── [4.0K]  2.2_Bash
 │   │   └── [   0]  create_structure.sh
-│   ├── [4.0K]  5_Outputs
-│   │   └── [4.0K]  DOCX
-│   └── [140K]  out.txt
+│   └── [ 28K]  out.txt
 ├── [4.0K]  3_Data
 │   ├── [4.0K]  3.1_Vectors
 │   │   ├── [  39]  chroma_link -> /mnt/data1_100g/agent_llm_local/vectors
@@ -67,7 +67,13 @@
 │       └── [4.0K]  huggingface_embeddings
 │           └── [  55]  all-MiniLM-L6-v2 -> /mnt/data1_100g/agent_llm_local/models/all-MiniLM-L6-v2
 ├── [4.0K]  4_Logs
-│   └── [   0]  init.txt
+│   ├── [   0]  init.txt
+│   ├── [6.8K]  log.start_fastapi.20260207_185758.log
+│   ├── [3.2K]  log.start_fastapi.20260207_191140.log
+│   ├── [3.2K]  log.start_fastapi.20260207_191322.log
+│   ├── [7.9K]  log.start_fastapi.20260207_191422.log
+│   ├── [6.5K]  log.start_fastapi.20260207_191433.log
+│   └── [2.5K]  log.start_ollama.20260207_185807.log
 ├── [4.0K]  5_Outputs
 │   ├── [4.0K]  5.1_DOCX
 │   ├── [4.0K]  5.2_PDF
@@ -80,7 +86,7 @@
 │   └── [   0]  init.txt
 ├── [4.0K]  7_Infos
 │   ├── [ 924]  PERMANENT_MEMORY.md
-│   └── [   0]  tree.txt
+│   └── [4.0K]  tree.txt
 ├── [4.0K]  8_Scripts
 │   ├── [4.0K]  8.1_Init
 │   │   ├── [9.4K]  config_paths.sh
@@ -88,7 +94,7 @@
 │   │   ├── [1.5K]  fix_ollama_group_permissions.sh
 │   │   ├── [6.5K]  init_fastapi.sh
 │   │   ├── [ 10K]  init_project.sh
-│   │   ├── [ 583]  init_python.sh
+│   │   ├── [ 581]  init_python.sh
 │   │   ├── [7.7K]  init_sqlite.sh
 │   │   ├── [4.0K]  logs
 │   │   ├── [4.0K]  old_versions
@@ -130,7 +136,7 @@
 ├── [3.5K]  Pipfile
 ├── [306K]  Pipfile.lock
 ├── [ 11K]  README.md
-├── [2.6K]  requirements.txt
+├── [8.6K]  requirements.txt
 └── [ 813]  temp.py
 
-49 directories, 85 files
+44 directories, 96 files

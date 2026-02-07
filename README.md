@@ -180,12 +180,12 @@ NoXoZ_job/
 │       ├── structure.md
 │       └── table.csv
 ├── 2_Sources/
-│   ├── Python/
+│   ├── 2.1_Python/
 │   │   └── main_agent.py
-│   └── Bash/
+│   └── 2.2_Bash/
 │       └── create_structure.sh
 ├── 3_Data/
-│   ├── Vectors/
+│   ├── 3.1_Vectors/
 │   │   ├── chroma_link -> /mnt/data1_100g/agent_llm_local/vectors
 │   │   └── models_link -> /mnt/data1_100g/agent_llm_local/models
 │   └── Metadata/
