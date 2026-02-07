@@ -49,7 +49,7 @@ def load_document(file_path: str) -> List[str]:
     """
     Charge le contenu d’un document en texte brut
     """
-    from PyPDF2 import PdfReader
+    from pypdf import PdfReader
     import docx
 
     ext = Path(file_path).suffix.lower()

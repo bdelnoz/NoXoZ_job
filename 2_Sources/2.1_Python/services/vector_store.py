@@ -13,7 +13,7 @@ import chromadb
 # Nouveau (LangChain 1.x)
 # from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 import docx
 
 BASE_DIR = Path(__file__).resolve().parent.parent

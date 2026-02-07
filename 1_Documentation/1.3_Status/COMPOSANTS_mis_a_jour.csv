@@ -29,7 +29,7 @@ Logging et Sécurité,Permissions & isolation agents,Contrôle accès, isolation
 Init Scripts,config_paths.sh / fix_ollama_group_permissions.sh,Création structure, correction permissions Ollama,Done,Done,Done,Done,Todo,Path: 8_Scripts/8.1_Init/,
 Init Scripts,ollama-batch-download.sh,Téléchargement batch modèles Ollama,Done,Done,Done,Done,Todo,Exécutable: ollama-batch-download.sh; logs: 8_Scripts/8.1_Init/logs/,,
 Init Scripts,reset_ollama_service.sh,Reset du service Ollama,Done,Done,Done,Done,Todo,Exécutable: reset_ollama_service.sh,,
-FastAPI Scripts,start_fastapi.sh,Démarrage API avec options --status, --force, --keep,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/start_fastapi.sh; logs: 4_Logs/
+FastAPI Scripts,start_fastapi.sh,Démarrage API avec options --status,Done,Done,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/start_fastapi.sh; logs: 4_Logs/
 FastAPI Scripts,test_fastapi.sh,Vérification endpoints API,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/test_fastapi.sh,,
 SQLite / Chroma Scripts,init_sqlite.sh,Initialisation DB + Chroma,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/init_sqlite.sh; DB: 3_Data/3.2_Metadata/db.sqlite,,
 SQLite / Chroma Scripts,test_sqlite.sh,Vérification insert/retrieve vecteurs,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/test_sqlite.sh,,

@@ -67,7 +67,7 @@ pydantic>=1.10.0
 python-multipart
 pandas
 sqlalchemy
-PyPDF2
+pypdf
 pdfplumber
 lxml
 markdown
@@ -75,7 +75,7 @@ langchain
 chromadb
 unstructured
 python-docx
-PyPDF2
+pypdf
 EOF
 
 # Installation dépendances
