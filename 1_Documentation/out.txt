@@ -1,0 +1,884 @@
+######################################################################
+# FULLPATH /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/1_Documentation/1.2_Technical/COMPOSANTS.csv
+######################################################################
+Composant Principal,Sub‑Composant / Module,Rôle / Fonction spécifique,Installation,Configuration,Testing / Création,Validation,E2E Validation,Détails Techniques / Fichiers & Folders,,
+LLM Engine,Ollama (Mistral-7B),Inférence principale, prompt → réponse,Done,Done,Done,Done,Todo,Modèles: /mnt/data1_100g/agent_llm_local/models/mistral-7b/; exécutable: ollama (/usr/local/bin/ollama); service Ollama local; dossiers: /2_Sources/2.1_Python/llm/,
+LLM Engine,Mixtral,Variante LLM pour tests multi-modèles,Done,Done,Done,Done,Todo,Modèles: /mnt/data1_100g/agent_llm_local/models/mixtral/; exécutable: ollama (/usr/local/bin/ollama); utilisé pour tests multi-modèles; dossiers: /2_Sources/2.1_Python/llm/,,
+Document Ingestion,PDF Loader,Parsing PDF, extraction texte et métadonnées,Done,Done,Done,Done,Todo,Script: 2_Sources/2.1_Python/loaders/pdf_loader.py; dépendances: PyPDF2; dossiers: 2_Sources/2.1_Python/loaders/,
+Document Ingestion,DOCX Loader,Parsing DOCX, extraction texte et métadonnées,Done,Done,Done,Done,Todo,Script: 2_Sources/2.1_Python/loaders/docx_loader.py; dépendances: python-docx; dossiers: 2_Sources/2.1_Python/loaders/,
+Document Ingestion,MD Loader,Parsing Markdown,Done,Done,Done,Done,Todo,Script: 2_Sources/2.1_Python/loaders/md_loader.py; dépendances: markdown; dossiers: 2_Sources/2.1_Python/loaders/,,
+Document Ingestion,JSON / XML Loader,Parsing fichiers structurés,Done,Done,Done,Done,Todo,"Scripts: json_loader.py / xml_loader.py; dépendances: xml.etree, json; dossiers: 2_Sources/2.1_Python/loaders/",,
+Vector Store,Chroma Vector DB,Stockage embeddings persistants,Done,Done,Done,Done,Todo,Installation via pip install chromadb; stockage: /mnt/data1_100g/agent_llm_local/vectors/; dossiers: 3_Data/3.1_Vectors/,,
+Vector Store,SQLite Metadata,Stockage métadonnées CV / chats / docs,Done,Done,Done,Done,Todo,Fichier DB: /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/3_Data/Metadata/db.sqlite; script init: init_sqlite.sh; dossiers: 3_Data/3.2_Metadata/,,
+Agent Logic,ReAct Logic,Raisonnement basé sur données, exécution de chaînes d’actions,Done,Done,Done,Done,Todo,Scripts: 2_Sources/2.1_Python/agent_react.py; dépendances: LangChain; dossiers: 2_Sources/2.1_Python/agent/,
+Agent Logic,Tools / Pipelines,Actions auxiliaires, intégration LLM + base,Done,Done,Done,Done,Todo,Dossiers: 2_Sources/2.1_Python/tools/; exécutable: pipelines.py,
+API Layer,FastAPI endpoints – /upload,Upload fichier via API,Done,Done,Done,Done,Todo,"Scripts: main_agent.py, router.py, status.py; dossiers: 2_Sources/2.1_Python/; endpoint /upload; dépendances: fastapi, uvicorn",,
+API Layer,FastAPI endpoints – /generate,Génération document via API,Done,Done,Done,Done,Todo,"Fichiers: main_agent.py; endpoint /generate; dépendances: fastapi, uvicorn",,
+API Layer,FastAPI endpoints – /status,Vérification statut composants,Done,Done,Done,Done,Todo,"Fichiers: status.py; lecture état Ollama, Chroma, SQLite; dossiers: 2_Sources/2.1_Python/",,
+DB,SQLite base,Stockage des métadonnées CV / chat / docs,Done,Done,Done,Done,Todo,"Fichier: 3_Data/3.2_Metadata/db.sqlite; scripts: init_sqlite.sh, test_sqlite.sh; dossiers: 3_Data/3.2_Metadata/",,
+DB,Chroma embeddings,Stockage des vecteurs de similarité,Done,Done,Done,Done,Todo,Stockage: /mnt/data1_100g/agent_llm_local/vectors/; dossiers: 3_Data/3.1_Vectors/,,
+Output Generation,Pandoc,Conversion MD → PDF/DOCX,Done,Done,Done,Done,Todo,Exécutable: pandoc; templates: 9_Templates/,,
+Output Generation,python-docx,Génération DOCX depuis templates,Done,Done,Done,Done,Todo,Library Python: python-docx; templates: 9_Templates/DOCX/,,
+Deployment,Docker Compose,Conteneurisation LLM + API + DB,Done,Done,Todo,Todo,Todo,Fichier: docker-compose.yml; commande: docker-compose up,,
+Deployment,Scripts de déploiement,Lancement et gestion des services,Done,Done,Done,Done,Todo,Scripts: 8_Scripts/8.1_Init/*.sh,,
+Storage big files,Modèles LLM,Stockage fichiers modèles lourds,Done,Done,Done,Done,Todo,Path: /mnt/data1_100g/agent_llm_local/models/,,
+Storage big files,Embeddings & vecteurs,Stockage vecteurs et bases volumineuses,Done,Done,Done,Done,Todo,Path: /mnt/data1_100g/agent_llm_local/vectors/,,
+Storage project files,Scripts / Logs / Outputs,Stockage projet et fichiers intermédiaires,Done,Done,Done,Done,Todo,Path: /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/,,
+Interface Web locale,Page prompt / input,Saisie prompt utilisateur,Done,Done,Done,Done,Todo,Fichiers: templates HTML/Python; endpoint FastAPI /generate; dossiers: 2_Sources/2.1_Python/templates/,,
+Interface Web locale,Dashboard status composants,Affichage état API, Ollama, Chroma,Todo,Todo,Todo,Todo,Todo,Scripts à créer: dashboard.py; lecture /status API; dossiers: 2_Sources/2.1_Python/dashboard/
+Interface Web locale,Multi-upload / batch processing,Upload fichiers multiples,Todo,Todo,Todo,Todo,Todo,Endpoint API /upload avec batch; interface UI à compléter,,
+Logging et Sécurité,Logs API / ingestion / génération,Logging complet des actions et prompts,Done,Done,Done,Done,Todo,Logs: 4_Logs/; script: log_manager.py,,
+Logging et Sécurité,Permissions & isolation agents,Contrôle accès, isolation contexte LLM,Done,Done,Done,Done,Todo,"Gestion via scripts init, permissions utilisateurs et groupes",
+Init Scripts,config_paths.sh / fix_ollama_group_permissions.sh,Création structure, correction permissions Ollama,Done,Done,Done,Done,Todo,Path: 8_Scripts/8.1_Init/,
+Init Scripts,ollama-batch-download.sh,Téléchargement batch modèles Ollama,Done,Done,Done,Done,Todo,Exécutable: ollama-batch-download.sh; logs: 8_Scripts/8.1_Init/logs/,,
+Init Scripts,reset_ollama_service.sh,Reset du service Ollama,Done,Done,Done,Done,Todo,Exécutable: reset_ollama_service.sh,,
+FastAPI Scripts,start_fastapi.sh,Démarrage API avec options --status, --force, --keep,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/start_fastapi.sh; logs: 4_Logs/
+FastAPI Scripts,test_fastapi.sh,Vérification endpoints API,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/test_fastapi.sh,,
+SQLite / Chroma Scripts,init_sqlite.sh,Initialisation DB + Chroma,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/init_sqlite.sh; DB: 3_Data/3.2_Metadata/db.sqlite,,
+SQLite / Chroma Scripts,test_sqlite.sh,Vérification insert/retrieve vecteurs,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/test_sqlite.sh,,
+Templates,DOCX / MD / PDF,Modèles documents professionnels,Done,Done,Done,Done,Todo,Path: 9_Templates/,,
+CI/CD,GitHub Actions,Automatisation tests et déploiement,Done,Done,Todo,Todo,Todo,Workflow: .github/workflows/*.yml,,
+
+######################################################################
+# FULLPATH /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/1_Documentation/1.2_Technical/OLLAMA_commandes.md
+######################################################################
+---
+# **📜 Commandes Ollama Complètes (Bruno Delnoz - Kali Linux)**
+**Auteur** : Bruno Delnoz (nox@casablanca)
+**Date** : 2026-02-05
+**Version** : 1.0
+**Format** : Markdown (`.md`)
+**Emplacement** : `/mnt/data2_78g/Security/scripts/Projects_system/Docs/commandes_ollama.md`
+**Contexte** : Scripts pour Kali Linux, format Markdown strict, sans numéros de version dans les noms de fichiers.
+---
+
+```bash
+################################################################################
+# 1️⃣ GESTION DES MODÈLES #######################################################
+################################################################################
+
+# Téléchargement/Mise à jour
+ollama pull <modèle>                     # Ex: ollama pull phi3:3.8b (128K tokens, idéal pour 350 questions)
+ollama pull --help                        # Affiche l'aide complète
+ollama pull <modèle> --show-progress      # Affiche la progression du téléchargement
+ollama pull --update <modèle>             # Met à jour un modèle existant
+
+# Liste/Suppression
+ollama list                              # Liste tous les modèles locaux
+ollama rm <modèle>                       # Supprime un modèle spécifique (ex: ollama rm mistral:7b)
+ollama rm --all                          # ⚠️ Supprime TOUS les modèles locaux (à utiliser avec prudence)
+
+################################################################################
+# 2️⃣ EXÉCUTION ET INTERACTION ###################################################
+################################################################################
+
+# Mode Interactif
+ollama run <modèle>                      # Lance un modèle en mode conversationnel (ex: ollama run llama3:8b)
+ollama run <modèle> "<prompt>"           # Exécute une requête unique (ex: ollama run phi3:3.8b "Explique Docker")
+
+# Options Avancées
+ollama run <modèle> --verbose             # Active le mode verbeux (logs détaillés)
+ollama run <modèle> --temperature 0.8    # Contrôle la créativité (0=précis, 1=créatif)
+ollama run <modèle> --num-gpu 1           # Utilise 1 GPU pour l'inférence
+ollama run <modèle> --num-threads 8       # Limite à 8 threads CPU
+ollama run <modèle> --mirostat 2          # Améliore la cohérence des réponses
+ollama run <modèle> --repeat_penalty 1.2  # Réduit les répétitions dans les réponses
+
+################################################################################
+# 3️⃣ SERVEUR OLLAMA ###########################################################
+################################################################################
+
+# Démarrage/Arrêt
+ollama serve                             # Démarre le serveur Ollama (port 11434 par défaut)
+ollama serve --host 0.0.0.0              # ⚠️ Autorise les connexions externes (attention sécurité)
+ollama serve --port 11435                # Change le port par défaut
+pkill -f ollama                          # Arrête le serveur (Kali Linux)
+
+# Configuration
+export OLLAMA_MODELS=/mnt/data1_100g/agent_llm_local/models  # Chemin personnalisé pour les modèles
+export OLLAMA_HOST=0.0.0.0:11434         # Définit l'hôte et le port
+ollama serve --debug                     # Active le mode debug (logs étendus)
+
+################################################################################
+# 4️⃣ MODELFILES (Personnalisation) #############################################
+################################################################################
+
+# Exemple de Modelfile pour un assistant Kali Linux (à enregistrer sous kali_assistant.modelfile)
+# FROM llama2:7b
+# PARAMETER temperature 0.8
+# SYSTEM "Expert en Kali Linux, spécialisé en sécurité et scripts shell. Réponds de manière concise et technique."
+
+# Création du modèle personnalisé
+ollama create kali_assistant -f kali_assistant.modelfile
+
+################################################################################
+# 5️⃣ API ET RÉSEAU #############################################################
+################################################################################
+
+# Requêtes API
+curl http://localhost:11434/api/tags      # Liste les modèles disponibles via l'API
+curl -X POST http://localhost:11434/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"model": "llama3:8b", "prompt": "Bonjour, explique-moi comment configurer un pare-feu sous Kali Linux"}'
+
+# Sécurité Réseau
+ollama serve --tls-key key.pem --tls-cert cert.pem  # Active le chiffrement TLS
+
+################################################################################
+# 6️⃣ PERFORMANCES ET DÉBOGAGE ##################################################
+################################################################################
+
+# Optimisation des performances
+ollama run <modèle> --mirostat 2          # Meilleure cohérence des réponses
+ollama run <modèle> --repeat_penalty 1.2  # Réduit les répétitions
+
+# Débogage
+journalctl -u ollama -f                  # Affiche les logs en temps réel (systemd)
+ollama run <modèle> --verbose             # Active le mode verbeux pour un modèle spécifique
+
+################################################################################
+# 7️⃣ SCRIPTS PRÊTS À L'EMPLOI ###################################################
+################################################################################
+
+# Script 1: Analyser un fichier texte (ex: 350 questions)
+#!/bin/bash
+# Usage: ./analyse_doc.sh mon_fichier.txt "Ta question"
+ollama run phi3:3.8b "Analyse ce fichier : \$(cat \$1) et réponds à : \$2" > "analyse_\$(date +%Y%m%d).md"
+
+# Script 2: Générer une synthèse
+#!/bin/bash
+# Usage: ./synthese_doc.sh mon_fichier.txt
+ollama run llama3:8b "Résume ce document en 5 points clés : \$(cat \$1)" > "synthese_\$(date +%Y%m%d).md"
+
+# Script 3: Lister les modèles (filtré)
+ollama list | grep -E "NAME|phi3:3.8b"     # Filtre un modèle spécifique
+
+################################################################################
+# 8️⃣ MODÈLES RECOMMANDÉS (Bruno Delnoz) ########################################
+################################################################################
+
+# | Modèle          | Taille (Go) | Tokens Max | Usage Recommandé                          | Commande               |
+# |-----------------|-------------|------------|-------------------------------------------|-------------------------|
+# | phi3:3.8b       | 2.3          | 128,000    | Documents très longs (350 questions)       | ollama pull phi3:3.8b   |
+# | mistral:7b      | 4.1          | 8,192      | Scripts Kali Linux                       | ollama pull mistral:7b  |
+# | codellama:34b   | 20           | 32,000     | Analyse de code                          | ollama pull codellama:34b|
+# | dbrx:132b       | 240          | 128,000    | Analyse de très longs documents          | ollama pull dbrx:132b   |
+
+################################################################################
+# 9️⃣ ERREURS COURANTES ET SOLUTIONS #############################################
+################################################################################
+
+# Permission denied sur /mnt/data1_100g/
+sudo chown -R nox\:nox /mnt/data1_100g/agent_llm_local/models/
+
+# Port 11434 déjà utilisé
+sudo fuser -k 11434/tcp                  # Libère le port
+ollama serve --port 11435                # Change de port
+
+# Modèle corrompu
+ollama rm <modèle>                       # Supprime le modèle corrompu
+ollama pull <modèle>                      # Réinstalle le modèle
+
+################################################################################
+# 🔄 SCRIPT COMPLET (Bruno Delnoz) ###############################################
+################################################################################
+
+#!/bin/bash
+# Script: ollama_tools.sh
+# Auteur: Bruno Delnoz (nox@casablanca)
+# Usage: ./ollama_tools.sh {download|analyze|list|server} [args]
+
+# Fonctions
+download_model() { ollama pull "\$1"; }
+analyze_file() { ollama run phi3:3.8b "Analyse \$(cat \$1)" > "analyse_\$(date +%Y%m%d).md"; }
+list_models() { ollama list; }
+start_server() {
+  export OLLAMA_MODELS=/mnt/data1_100g/agent_llm_local/models
+  ollama serve --host 0.0.0.0 --port 11434
+}
+
+# Gestion des arguments
+case "\$1" in
+  download) download_model "\$2" ;;
+  analyze) analyze_file "\$2" ;;
+  list) list_models ;;
+  server) start_server ;;
+  *) echo "Usage: \$0 {download|analyze|list|server} [args]"; exit 1 ;;
+esac
+
+######################################################################
+# FULLPATH /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/1_Documentation/1.2_Technical/structure.md
+######################################################################
+NoXoZ_job/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml          # Pipeline CI/CD
+├── scripts/
+│   ├── old_versions/           # Anciennes versions des scripts (pour changelog)
+│   │   └── all_my_scripts.old_versions.txt
+│   ├── setup_agent_llm.sh       # Script de setup principal
+│   └── create-repo.sh          # Script pour créer des dépôts Git (à corriger)
+├── src/
+│   ├── main_agent.py            # Code principal de l'agent LLM
+│   ├── WHY.MD                  # Motivations du projet
+│   ├── README.md                # Documentation utilisateur
+│   ├── CHANGELOG.md             # Historique des modifications
+│   └── INSTALL.MD               # Guide d'installation
+├── data/
+│   ├── vectors/                 # Stockage des embeddings (Chroma)
+│   └── metadata.db              # Base de données SQLite
+├── docker-compose.yml           # Configuration Docker
+├── requirements.txt             # Dépendances Python
+└── outputs/                     # Fichiers générés (CV, lettres, etc.)
+
+######################################################################
+# FULLPATH /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/1_Documentation/1.2_Technical/OLLAMA_all_models_with_token_limits.md
+######################################################################
+# **Liste Exhaustive des Modèles Ollama**
+*Dernière mise à jour : 2026-02-05*
+*Format : Markdown (pour intégration directe dans la documentation technique de Bruno Delnoz)*
+
+---
+
+## **1. Modèles Généraux (Text Generation)**
+
+| **Modèle**               | **Taille (Go)** | **Commande `ollama pull`**       | **Tokens Max** | **Usage Recommandé**                     |
+|--------------------------|-----------------|-----------------------------------|----------------|------------------------------------------|
+| **phi3:3.8b**            | 2.3             | `ollama pull phi3:3.8b`          | 128,000         | Documents très longs, contexte étendu    |
+| **phi3:mini**            | 1.8             | `ollama pull phi3:mini`          | 128,000         | Léger et efficace                        |
+| **llama3:8b**            | 4.7             | `ollama pull llama3:8b`          | 8,192           | Usage général, raisonnement              |
+| **llama3:70b**           | 42              | `ollama pull llama3:70b`         | 32,000          | Raisonnement profond, tâches complexes    |
+| **llama2:7b**            | 3.8             | `ollama pull llama2:7b`          | 4,096           | Usage général                            |
+| **llama2:13b**           | 7.5             | `ollama pull llama2:13b`         | 4,096           | Tâches plus complexes                    |
+| **llama2:70b**           | 42              | `ollama pull llama2:70b`         | 4,096           | Usage avancé                             |
+| **mistral:7b**           | 4.1             | `ollama pull mistral:7b`          | 8,192           | Rapidité, documents techniques            |
+| **mixtral:8x7b**         | 26              | `ollama pull mixtral:8x7b`        | 32,000          | Équilibre performance/ressources          |
+| **mixtral:8x22b**        | 64              | `ollama pull mixtral:8x22b`       | 64,000          | Analyse complexe, multilingue            |
+| **gemma:2b**             | 1.4             | `ollama pull gemma:2b`            | 8,192           | Léger et efficace                        |
+| **gemma:7b**             | 4.8             | `ollama pull gemma:7b`            | 8,192           | Usage général léger                      |
+| **gemma2:9b**            | 5.4             | `ollama pull gemma2:9b`          | 8,192           | Amélioration de gemma:7b                  |
+| **dbrx:132b**            | 240             | `ollama pull dbrx:132b`          | 128,000         | Analyse de très longs documents           |
+| **tinyllama:1.1b**       | 0.6             | `ollama pull tinyllama:1.1b`      | 2,048           | Tests rapides, environnements limités     |
+
+---
+
+## **2. Modèles Spécialisés (Code, Multilingue, etc.)**
+
+| **Modèle**               | **Taille (Go)** | **Commande `ollama pull`**       | **Tokens Max** | **Usage Recommandé**                     |
+|--------------------------|-----------------|-----------------------------------|----------------|------------------------------------------|
+| **codellama:7b**         | 3.8             | `ollama pull codellama:7b`        | 8,192           | Analyse de code                          |
+| **codellama:13b**        | 7.5             | `ollama pull codellama:13b`       | 8,192           | Code plus complexe                       |
+| **codellama:34b**        | 20              | `ollama pull codellama:34b`       | 32,000          | Code complexe, raisonnement technique    |
+| **deepseek-coder:1.3b**   | 0.8             | `ollama pull deepseek-coder:1.3b`  | 4,096           | Code léger                              |
+| **deepseek-coder:6.7b**   | 4.0             | `ollama pull deepseek-coder:6.7b`  | 32,000          | Spécialisé pour le code                  |
+| **deepseek-coder:33b**    | 19              | `ollama pull deepseek-coder:33b`   | 32,000          | Code avancé                              |
+| **qwen:0.5b**            | 0.3             | `ollama pull qwen:0.5b`           | 2,048           | Multilingue léger                       |
+| **qwen:1.8b**            | 1.1             | `ollama pull qwen:1.8b`           | 2,048           | Multilingue léger                       |
+| **qwen:7b**              | 4.2             | `ollama pull qwen:7b`             | 32,000          | Multilingue (chinois, anglais, français) |
+| **qwen:14b**             | 8.4             | `ollama pull qwen:14b`            | 32,000          | Multilingue avancé                      |
+| **qwen:72b**             | 135             | `ollama pull qwen:72b`            | 32,000          | Multilingue avancé                      |
+| **yi:6b**                | 3.5             | `ollama pull yi:6b`               | 32,000          | Documents techniques                     |
+| **yi:34b**               | 20              | `ollama pull yi:34b`              | 32,000          | Analyse approfondie                      |
+| **sqlcoder:7b**          | 3.8             | `ollama pull sqlcoder:7b`          | 8,192           | Spécialisé pour SQL                      |
+| **starcoder:3b**         | 1.8             | `ollama pull starcoder:3b`         | 8,192           | Code et développement                    |
+| **starcoder:7b**         | 4.2             | `ollama pull starcoder:7b`         | 8,192           | Code et développement                    |
+| **starcoder2:3b**        | 1.8             | `ollama pull starcoder2:3b`        | 8,192           | Code et développement                    |
+| **starcoder2:7b**        | 4.2             | `ollama pull starcoder2:7b`        | 16,384          | Code et développement                    |
+| **starcoder2:15b**       | 8.5             | `ollama pull starcoder2:15b`       | 16,384          | Code et développement                    |
+| **phind-codellama:34b**  | 20              | `ollama pull phind-codellama:34b`  | 32,000          | Code avancé                              |
+
+---
+
+## **3. Modèles Non Censurés (Dolphin)**
+
+| **Modèle**               | **Taille (Go)** | **Commande `ollama pull`**       | **Tokens Max** | **Usage Recommandé**                     |
+|--------------------------|-----------------|-----------------------------------|----------------|------------------------------------------|
+| **dolphin-llama3:8b**    | 4.7             | `ollama pull dolphin-llama3:8b`   | 8,192           | Conversations libres, non censurées     |
+| **dolphin-mistral:7b**   | 4.1             | `ollama pull dolphin-mistral:7b`  | 8,192           | Usage général non censuré               |
+| **dolphin-mixtral:8x7b** | 26              | `ollama pull dolphin-mixtral:8x7b`| 32,000          | Analyse complexe non censurée           |
+
+---
+
+## **4. Modèles Légers (Faible Consommation)**
+
+| **Modèle**               | **Taille (Go)** | **Commande `ollama pull`**       | **Tokens Max** | **Usage Recommandé**                     |
+|--------------------------|-----------------|-----------------------------------|----------------|------------------------------------------|
+| **tinyllama:1.1b**       | 0.6             | `ollama pull tinyllama:1.1b`      | 2,048           | Tests rapides, environnements limités  |
+| **phi:2.7b**             | 1.6             | `ollama pull phi:2.7b`            | 2,048           | Petits projets, rapidité                |
+
+---
+
+## **5. Modèles Expérimentaux et MoE (Mixture of Experts)**
+
+| **Modèle**               | **Taille (Go)** | **Commande `ollama pull`**       | **Tokens Max** | **Usage Recommandé**                     |
+|--------------------------|-----------------|-----------------------------------|----------------|------------------------------------------|
+| **mixtral:8x7b**         | 26              | `ollama pull mixtral:8x7b`        | 32,000          | Équilibre performance/ressources          |
+| **mixtral:8x22b**        | 64              | `ollama pull mixtral:8x22b`       | 64,000          | Analyse complexe, multilingue            |
+
+---
+
+## **6. Notes et Recommandations**
+### **6.1. Choix du Modèle**
+- **Pour des documents très longs** (ex: 350 questions) : **`phi3:3.8b`** (128K tokens) ou **`dbrx:132b`** (128K tokens).
+- **Pour du code** : **`deepseek-coder:6.7b`** ou **`codellama:34b`** (32K tokens).
+- **Pour un usage léger** : **`tinyllama:1.1b`** ou **`phi:2.7b`**.
+
+### **6.2. Commandes Utiles**
+- **Lister les modèles téléchargés** :
+  ```bash
+  ollama list
+
+######################################################################
+# FULLPATH /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/1_Documentation/1.2_Technical/table.csv
+######################################################################
+﻿Modèle,Taille,Contexte max (tokens),Usage recommandé,Commande ollama pull
+dbrx:132b,132B,128,000,Analyse de très longs documents, recherche,ollama pull dbrx:132b
+mixtral:8x22b,22B (MoE),64,000,Tâches complexes, multilingue,ollama pull mixtral:8x22b
+llama3:70b,70B,32,000,Génération de texte avancée, raisonnement,ollama pull llama3:70b
+yi:34b,34B,32,000,Documents techniques, code,ollama pull yi:34b
+qwen:72b,72B,32,000,Multilingue (chinois, anglais, français),ollama pull qwen:72b
+deepseek:67b,67B,32,000,Code, analyse technique,ollama pull deepseek:67b
+mixtral:8x7b,7B (MoE),32,000,Équilibre performance/ressources,ollama pull mixtral:8x7b
+llama2:70b,70B,4,096,Usage général (limité par Ollama),ollama pull llama2:70b
+mistral:7b,7B,8,192,Rapidité, usage local léger,ollama pull mistral:7b
+phi3:3.8b,3.8B,128,000,Meilleur rapport taille/contexte,ollama pull phi3:3.8b
+gemma2:9b,9B,8,192,Léger et efficace,ollama pull gemma2:9b
+######################################################################
+# FULLPATH /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/1_Documentation/1.1_General/ARCHITECTURE.md
+######################################################################
+# NoXoZ_job
+
+Agent LLM local pour l’ingestion, l’analyse et la génération de documents professionnels, **100 % hors cloud**, sécurisé et modulaire.
+
+---
+
+## Objectif du projet
+
+NoXoZ_job est conçu pour fournir un **agent intelligent local**, capable de :
+
+* Ingérer et analyser des données personnelles (CV, conversations, documents, exports de chats).
+* Raisonner sur ces données via un LLM local puissant.
+* Générer des documents professionnels personnalisés (.docx, .md, .pdf).
+* Fonctionner entièrement hors ligne, sous contrôle total de l’utilisateur.
+* Être réutilisable dans différents environnements, y compris VirtualBox.
+
+Le projet met l’accent sur **robustesse, modularité et durabilité**, adapté à un usage personnel ou professionnel sensible.
+
+---
+
+## Principes clés
+
+* Exécution 100 % locale
+* Pas de dépendances cloud
+* Contrôle complet des données par l’utilisateur
+* Architecture modulaire et évolutive
+* Installation et configuration entièrement scriptées pour réutilisation
+
+---
+
+## Interface Web Locale
+
+Le projet inclut une **interface web locale**, accessible uniquement sur la machine hôte.
+
+### Accès
+
+* Adresse fixe : `http://127.0.0.1:11111`
+* Accessible uniquement depuis la machine locale
+
+### Fonctionnalités – Version initiale (MVP)
+
+* Page web minimaliste avec :
+
+  * Champ de saisie pour le prompt utilisateur
+  * Bouton **Send** pour envoyer le prompt à l’API FastAPI
+  * Affichage dynamique de la réponse générée par le LLM
+
+### Évolutions prévues
+
+* Sélection dynamique des modèles Ollama disponibles
+* Upload multi-fichiers pour CV, historiques de chat, documents
+* Boutons de contrôle des composants :
+
+  * Redémarrage Ollama
+  * Redémarrage API
+  * Rechargement de la base vectorielle
+* Statut en temps réel des composants : API, Ollama, Chroma
+* Historique des interactions pour suivi et audit
+* Interface web locale sécurisée, **aucune exposition publique**
+
+---
+
+## Objectifs & Fonctionnalités clés
+
+* **GitHub** : [https://github.com/bdelnoz/NoXoZ_job.git](https://github.com/bdelnoz/NoXoZ_job.git)
+* **Local repo** : `/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job`
+* **OLLAMA_MODELS** : `/mnt/data1_100g/agent_llm_local/models`
+* 100 % local et offline après installation
+* Ingestion de données : CV, exports de chats (Le Chat, ChatGPT, Grok, Claude)
+* Fichiers supportés : `.md`, `.docx`, `.pdf`, `.json`, `.xml`
+* Génération documentaire : lettres de motivation, CV personnalisés, emails
+* Formats de sortie : `.docx`, `.md`, `.pdf`
+* API RESTful FastAPI
+* Base de données : SQLite + Chroma pour les embeddings
+* Déploiement : local natif, VirtualBox, Docker Compose
+* Pipeline CI/CD : GitHub Actions
+* Installation et configuration entièrement scriptées pour réutilisation
+* OS cible : Linux Kali / Debian
+
+---
+
+## Composants Clés
+
+| Composant                 | Technologie                                             | Rôle                                            |
+| ------------------------- | ------------------------------------------------------- | ----------------------------------------------- |
+| **LLM Engine**            | Ollama (Mistral-7B, Mixtral)                            | Inférence locale du modèle de langage           |
+| **Document Ingestion**    | LangChain Loaders                                       | Parsing des fichiers (PDF, DOCX, MD, JSON, XML) |
+| **Vector Store**          | Chroma                                                  | Stockage persistant des embeddings sur disque   |
+| **Agent Logic**           | LangChain (ReAct)                                       | Raisonnement et actions basées sur les données  |
+| **API Layer**             | FastAPI                                                 | Endpoints upload, requêtes et génération        |
+| **DB**                    | SQLite + Chroma                                         | Métadonnées utilisateur et stockage vectoriel   |
+| **Output Generation**     | Pandoc, python-docx                                     | Conversion et génération de fichiers            |
+| **Deployment**            | Docker Compose                                          | Conteneurisation pour local / VirtualBox        |
+| **Storage big files**     | `/mnt/data1_100g/agent_llm_local/`                      | Stockage centralisé des gros volumes            |
+| **Storage project files** | `/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job` | Stockage centralisé des fichiers du projet      |
+
+---
+
+## Architecture – Diagramme (Text-Based)
+
+```text
++-------------+     +-------------+
+| User Input  |     | GitHub Repo |
+| (CLI / UI)  |<--->| NoXoZ_job   |
++-------------+     +-------------+
+         |
+         v
+ +----------------+        +-------------+
+ | FastAPI Server |<------>| CI/CD       |
+ +----------------+        | Pipelines   |
+         |                 +-------------+
+         v
+ +-----------------+
+ | LangChain Agent |
+ | (ReAct + Tools) |
+ +-----------------+
+         |
+         v
+ +-----------------+     +----------------------+
+ | Ollama LLM      |<--->| Chroma Vector Store  |
+ | (Mistral-7B)    |     | + SQLite Metadata   |
+ +-----------------+     +----------------------+
+         |
+         v
+ +-----------------+
+ | Document Loaders|
+ | (.md/.docx/etc) |
+ +-----------------+
+         |
+         v
+ +-----------------+
+ | Output Generators|
+ | (Pandoc / Docx) |
+ +-----------------+
+
+Persistent Storage:
+- /mnt/data1_100g/agent_llm_local/
+- /mnt/data2_78g/.../NoXoZ_job
+```
+
+---
+
+## Arborescence du projet
+
+```
+NoXoZ_job/
+├── 1_Documentation/
+│   ├── 1.1_General/
+│   └── 1.2_Technical/
+├── 2_Sources/
+│   ├── 2.1_Python/
+│   └── 2.2_Bash/
+├── 3_Data/
+│   ├── 3.1_Vectors/
+│   └── 3.2_Metadata/
+├── 4_Logs/
+├── 5_Outputs/
+│   ├── 5.1_DOCX/
+│   └── 5.2_PDF/
+├── 6_Results/
+│   ├── 6.1_Bugs/
+│   └── 6.2_Innovations/
+├── 7_Infos/
+├── 8_Scripts/
+│   ├── 8.1_Init/
+│   └── 8.2_Utils/
+├── 9_Templates/
+├── README.md
+└── ARCHITECTURE.md
+```
+
+---
+
+## Pipeline Fonctionnel
+
+1. **Ingestion** : Upload et parsing des fichiers (CV, chats, docs) via API ou interface web.
+2. **Analyse** : Extraction des informations clés avec NLP (compétences, expériences).
+3. **Génération** : Templates et logique LLM pour créer documents (CV, lettres, emails).
+4. **Export** : Formats `.docx`, `.md`, `.pdf`.
+
+---
+
+## Sécurité et Contrôle
+
+* Contrôle d’accès utilisateur et rôle
+* Isolation logique des agents pour éviter fuites de contexte
+* Logging complet : prompts, réponses, modèles utilisés, actions
+* Aucune exposition réseau externe par défaut
+
+---
+
+## Déploiement rapide (résumé)
+
+1. Installer un Linux propre (VM ou machine dédiée)
+2. Installer Python, Ollama, dépendances
+3. Lancer Ollama et charger les modèles
+4. Démarrer l’API FastAPI
+5. Accéder à l’interface web sur `127.0.0.1:11111`
+
+---
+
+## Évolutions prévues
+
+* Interface web avancée avec multi-modèles
+* Upload multi-fichiers et batch processing
+* Multi-agents spécialisés et orchestration avancée
+* Matching automatique CV / offres
+* Mémoire long terme enrichie pour suivi historique
+* Tableau de bord avec statut en temps réel des composants
+
+---
+
+**Auteur** : Bruno Delnoz
+**Date** : 04/02/2026
+
+######################################################################
+# FULLPATH /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/1_Documentation/1.1_General/ollama-models-guide.md
+######################################################################
+# GUIDE RAPIDE MODÈLES OLLAMA
+
+## MISTRAL (4.1GB chacun)
+**mistral:latest** | **mistral:7b**
+- Usage: Général français/anglais, conversations, rédaction
+- Fort: Excellent en français, raisonnement solide
+- Commande: `ollama run mistral "ta question"`
+
+## LLAMA 3.2 (2GB chacun)
+**llama3.2:latest** | **llama3.2:3b**
+- Usage: Conversations rapides, tâches légères
+- Fort: Rapide, peu gourmand, bon généraliste
+- Commande: `ollama run llama3.2 "ta question"`
+
+## CODELLAMA (3.8GB)
+**codellama:7b**
+- Usage: Génération code, debug, explications techniques
+- Fort: Python, JavaScript, bash, SQL
+- Commande: `ollama run codellama "écris fonction python pour..."`
+
+## GEMMA2 (1.6GB)
+**gemma2:2b**
+- Usage: Petit, rapide, multitâche basique
+- Fort: Efficacité/taille, conversations courtes
+- Commande: `ollama run gemma2:2b "question simple"`
+
+## QWEN 2.5 (1.9GB)
+**qwen2.5:3b**
+- Usage: Multilingue, maths, raisonnement
+- Fort: Chinois/anglais, calculs, logique
+- Commande: `ollama run qwen2.5:3b "problème maths"`
+
+## DEEPSEEK-R1 (4.4GB et 4.7GB)
+**deepseek-r1:7b** | **deepseek-r1:8b**
+- Usage: Raisonnement complexe, résolution problèmes
+- Fort: Analyse étape par étape, logique avancée
+- Commande: `ollama run deepseek-r1:7b "raisonne sur..."`
+
+## PHI3 (2.3GB et 7.9GB)
+**phi3:mini** | **phi3:medium**
+- Usage: Efficace qualité/taille, tâches variées
+- Fort: Mini=rapide, Medium=précis
+- Commande: `ollama run phi3:mini "question"`
+
+## ORCA-MINI (1.9GB)
+**orca-mini:3b**
+- Usage: Conversations naturelles compactes
+- Fort: Dialogues fluides, peu de ressources
+- Commande: `ollama run orca-mini "discutons de..."`
+
+## NEURAL-CHAT (4.1GB)
+**neural-chat:7b**
+- Usage: Chat optimisé, assistant conversationnel
+- Fort: Réponses structurées, tonalité adaptée
+- Commande: `ollama run neural-chat "aide-moi à..."`
+
+## STARLING-LM (4.1GB)
+**starling-lm:7b**
+- Usage: Chat haute qualité, instructions précises
+- Fort: Suivi instructions, réponses détaillées
+- Commande: `ollama run starling-lm "explique..."`
+
+## SOLAR (6.1GB)
+**solar:10.7b**
+- Usage: Raisonnement avancé, tâches complexes
+- Fort: Plus gros modèle, meilleures performances
+- Commande: `ollama run solar "analyse complexe..."`
+
+---
+
+## CONSEILS UTILISATION
+
+**Pour coder**: codellama, deepseek-r1
+**Pour français**: mistral
+**Pour rapidité**: gemma2, llama3.2, phi3:mini
+**Pour qualité**: solar, phi3:medium, starling-lm
+**Pour raisonnement**: deepseek-r1, solar, qwen2.5
+**Pour conversations**: neural-chat, orca-mini, mistral
+
+**Commande générique**:
+```bash
+ollama run <modele> "ta question ou prompt"
+```
+
+**Lister modèles installés**:
+```bash
+ollama list
+```
+
+######################################################################
+# FULLPATH /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/1_Documentation/1.3_Status/plan_detaille.md
+######################################################################
+
+# Plan Détaillé des Étapes Techniques
+*Bruno Delnoz – Projet LLM & Document Ingestion*
+*Dernière mise à jour : 07/02/2026*
+
+---
+
+## **1. LLM Engine & Document Ingestion**
+### **1.1. Ollama (Mistral-7B)**
+- **Vérification du service**
+  ```bash
+  systemctl status ollama.service
+  sudo systemctl start ollama.service
+  journalctl -u ollama.service -f
+  ```
+- **Test de génération**
+  ```bash
+  ollama run mistral-7b "Test prompt"
+  ```
+- **Vérification des modèles**
+  ```bash
+  ollama list
+  ls /mnt/data1_100g/agent_llm_local/models/mistral-7b/
+  ```
+- **Résolution des dépendances**
+  ```bash
+  ollama pull mistral-7b
+  ldd $(which ollama)
+  ```
+
+### **1.2. Mixtral**
+- **Compatibilité multi-modèles**
+  ```bash
+  ollama run mixtral
+  ```
+- **Tests de génération**
+  ```bash
+  ollama run mixtral "Test parallel prompt"
+  ```
+
+### **1.3. Document Loaders**
+- **JSON/XML Loader**
+  ```bash
+  python test_json_loader.py
+  ```
+- **MD/DOCX/PDF Loader**
+  ```bash
+  python test_md_loader.py
+  python test_docx_loader.py
+  python test_pdf_loader.py
+  ```
+
+---
+
+## **2. Vector Store**
+### **2.1. Chroma Vector DB**
+- **Initialisation**
+  ```bash
+  chroma run --path /mnt/data1_100g/chroma_db
+  ```
+- **Tests de persistance**
+  ```bash
+  python test_chroma_persistence.py
+  ```
+
+### **2.2. SQLite Metadata**
+- **Initialisation**
+  ```bash
+  bash init_sqlite.sh
+  ```
+- **Tests de récupération**
+  ```bash
+  python test_sqlite_metadata.py
+  ```
+
+---
+
+## **3. Agent Logic (ReAct + Pipelines)**
+- **Compléter le code de décision/action**
+  ```bash
+  python agent_logic.py
+  ```
+- **Tests unitaires**
+  ```bash
+  python test_react_logic.py
+  ```
+
+---
+
+## **4. API Layer (FastAPI)**
+- **Vérification des endpoints**
+  ```bash
+  curl http://localhost:8000/upload
+  curl http://localhost:8000/generate
+  ```
+- **Tests de charge**
+  ```bash
+  bash test_fastapi.sh
+  ```
+
+---
+
+## **5. Output Generation**
+- **Installation des dépendances**
+  ```bash
+  sudo apt install pandoc
+  pip install python-docx
+  ```
+- **Tests de génération**
+  ```bash
+  python test_output_generation.py
+  ```
+
+---
+
+## **6. Interface Web locale**
+- **Intégration avec l’API**
+  ```bash
+  python frontend/index.html
+  ```
+- **Dashboard**
+  ```bash
+  python dashboard.py
+  ```
+
+---
+
+## **7. Logging & Sécurité**
+- **Finaliser log_manager.py**
+  ```bash
+  python log_manager.py
+  ```
+- **Permissions**
+  ```bash
+  chown -R user:group /mnt/data1_100g/
+  chmod 700 /mnt/data1_100g/agent_llm_local/
+  ```
+
+---
+
+## **8. Deployment**
+- **Docker Compose**
+  ```bash
+  docker-compose up -d
+  ```
+- **Scripts d’initialisation**
+  ```bash
+  bash start_all.sh
+  ```
+
+---
+
+## **9. Templates & CI/CD**
+- **Création des modèles**
+  ```bash
+  python create_templates.py
+  ```
+- **Workflow CI/CD**
+  ```yaml
+  # .github/workflows/test_deploy.yml
+  name: Test & Deploy
+  on: [push]
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - run: python -m pytest
+  ```
+
+---
+
+# Annexe : CSV des Composants
+*Mise à jour : 07/02/2026*
+
+```csv
+Composant Principal,Sub‑Composant / Module,Rôle / Fonction spécifique,Installation,Configuration,Testing / Création,Validation,E2E Validation,Détails Techniques / Fichiers & Folders
+LLM Engine,Ollama (Mistral-7B),Inférence principale,prompt → réponse,Done,Done,Done,Done,Modèles: /mnt/data1_100g/agent_llm_local/models/mistral-7b/
+LLM Engine,Mixtral,Variante LLM pour tests multi-modèles,Done,Done,Done,Todo,Modèles: /mnt/data1_100g/agent_llm_local/models/mixtral/
+Document Ingestion,PDF Loader,Parsing PDF,extraction texte et métadonnées,Done,Done,Done,Done,Script: 2_Sources/2.1_Python/loaders/pdf_loader.py
+Document Ingestion,DOCX Loader,Parsing DOCX,extraction texte et métadonnées,Done,Done,Done,Done,Script: 2_Sources/2.1_Python/loaders/docx_loader.py
+Document Ingestion,MD Loader,Parsing Markdown,Done,Done,Done,Todo,Script: 2_Sources/2.1_Python/loaders/md_loader.py
+```
+
+
+######################################################################
+# FULLPATH /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/1_Documentation/1.3_Status/COMPOSANTS_mis_a_jour.csv
+######################################################################
+Composant Principal,Sub‑Composant / Module,Rôle / Fonction spécifique,Installation,Configuration,Testing / Création,Validation,E2E Validation,Détails Techniques / Fichiers & Folders,Unnamed: 9,Unnamed: 10
+LLM Engine,Ollama (Mistral-7B),Inférence principale, prompt → réponse,Done,Done,Done,Done,Todo,Modèles: /mnt/data1_100g/agent_llm_local/models/mistral-7b/; exécutable: ollama (/usr/local/bin/ollama); service Ollama local; dossiers: /2_Sources/2.1_Python/llm/,
+LLM Engine,Mixtral,Variante LLM pour tests multi-modèles,Done,Done,Done,Done,Todo,Modèles: /mnt/data1_100g/agent_llm_local/models/mixtral/; exécutable: ollama (/usr/local/bin/ollama); utilisé pour tests multi-modèles; dossiers: /2_Sources/2.1_Python/llm/,,
+Document Ingestion,PDF Loader,Parsing PDF, extraction texte et métadonnées,Done,Done,Done,Done,Todo,Script: 2_Sources/2.1_Python/loaders/pdf_loader.py; dépendances: PyPDF2; dossiers: 2_Sources/2.1_Python/loaders/,
+Document Ingestion,DOCX Loader,Parsing DOCX, extraction texte et métadonnées,Done,Done,Done,Done,Todo,Script: 2_Sources/2.1_Python/loaders/docx_loader.py; dépendances: python-docx; dossiers: 2_Sources/2.1_Python/loaders/,
+Document Ingestion,MD Loader,Parsing Markdown,Done,Done,Done,Done,Todo,Script: 2_Sources/2.1_Python/loaders/md_loader.py; dépendances: markdown; dossiers: 2_Sources/2.1_Python/loaders/,,
+Document Ingestion,JSON / XML Loader,Parsing fichiers structurés,Done,Done,Done,Done,Todo,"Scripts: json_loader.py / xml_loader.py; dépendances: xml.etree, json; dossiers: 2_Sources/2.1_Python/loaders/",,
+Vector Store,Chroma Vector DB,Stockage embeddings persistants,Done,Done,Done,Done,Todo,Installation via pip install chromadb; stockage: /mnt/data1_100g/agent_llm_local/vectors/; dossiers: 3_Data/3.1_Vectors/,,
+Vector Store,SQLite Metadata,Stockage métadonnées CV / chats / docs,Done,Done,Done,Done,Todo,Fichier DB: /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/3_Data/Metadata/db.sqlite; script init: init_sqlite.sh; dossiers: 3_Data/3.2_Metadata/,,
+Agent Logic,ReAct Logic,Raisonnement basé sur données, exécution de chaînes d’actions,Done,Done,Done,Done,Todo,Scripts: 2_Sources/2.1_Python/agent_react.py; dépendances: LangChain; dossiers: 2_Sources/2.1_Python/agent/,
+Agent Logic,Tools / Pipelines,Actions auxiliaires, intégration LLM + base,Done,Done,Done,Done,Todo,Dossiers: 2_Sources/2.1_Python/tools/; exécutable: pipelines.py,
+API Layer,FastAPI endpoints – /upload,Upload fichier via API,Done,Done,Done,Done,Todo,"Scripts: main_agent.py, router.py, status.py; dossiers: 2_Sources/2.1_Python/; endpoint /upload; dépendances: fastapi, uvicorn",,
+API Layer,FastAPI endpoints – /generate,Génération document via API,Done,Done,Done,Done,Todo,"Fichiers: main_agent.py; endpoint /generate; dépendances: fastapi, uvicorn",,
+API Layer,FastAPI endpoints – /status,Vérification statut composants,Done,Done,Done,Done,Todo,"Fichiers: status.py; lecture état Ollama, Chroma, SQLite; dossiers: 2_Sources/2.1_Python/",,
+DB,SQLite base,Stockage des métadonnées CV / chat / docs,Done,Done,Done,Done,Todo,"Fichier: 3_Data/3.2_Metadata/db.sqlite; scripts: init_sqlite.sh, test_sqlite.sh; dossiers: 3_Data/3.2_Metadata/",,
+DB,Chroma embeddings,Stockage des vecteurs de similarité,Done,Done,Done,Done,Todo,Stockage: /mnt/data1_100g/agent_llm_local/vectors/; dossiers: 3_Data/3.1_Vectors/,,
+Output Generation,Pandoc,Conversion MD → PDF/DOCX,Done,Done,Done,Done,Todo,Exécutable: pandoc; templates: 9_Templates/,,
+Output Generation,python-docx,Génération DOCX depuis templates,Done,Done,Done,Done,Todo,Library Python: python-docx; templates: 9_Templates/DOCX/,,
+Deployment,Docker Compose,Conteneurisation LLM + API + DB,Done,Done,Todo,Todo,Todo,Fichier: docker-compose.yml; commande: docker-compose up,,
+Deployment,Scripts de déploiement,Lancement et gestion des services,Done,Done,Done,Done,Todo,Scripts: 8_Scripts/8.1_Init/*.sh,,
+Storage big files,Modèles LLM,Stockage fichiers modèles lourds,Done,Done,Done,Done,Todo,Path: /mnt/data1_100g/agent_llm_local/models/,,
+Storage big files,Embeddings & vecteurs,Stockage vecteurs et bases volumineuses,Done,Done,Done,Done,Todo,Path: /mnt/data1_100g/agent_llm_local/vectors/,,
+Storage project files,Scripts / Logs / Outputs,Stockage projet et fichiers intermédiaires,Done,Done,Done,Done,Todo,Path: /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/,,
+Interface Web locale,Page prompt / input,Saisie prompt utilisateur,Done,Done,Done,Done,Todo,Fichiers: templates HTML/Python; endpoint FastAPI /generate; dossiers: 2_Sources/2.1_Python/templates/,,
+Interface Web locale,Dashboard status composants,Affichage état API, Ollama, Chroma,Todo,Todo,Todo,Todo,Todo,Scripts à créer: dashboard.py; lecture /status API; dossiers: 2_Sources/2.1_Python/dashboard/
+Interface Web locale,Multi-upload / batch processing,Upload fichiers multiples,Todo,Todo,Todo,Todo,Todo,Endpoint API /upload avec batch; interface UI à compléter,,
+Logging et Sécurité,Logs API / ingestion / génération,Logging complet des actions et prompts,Done,Done,Done,Done,Todo,Logs: 4_Logs/; script: log_manager.py,,
+Logging et Sécurité,Permissions & isolation agents,Contrôle accès, isolation contexte LLM,Done,Done,Done,Done,Todo,"Gestion via scripts init, permissions utilisateurs et groupes",
+Init Scripts,config_paths.sh / fix_ollama_group_permissions.sh,Création structure, correction permissions Ollama,Done,Done,Done,Done,Todo,Path: 8_Scripts/8.1_Init/,
+Init Scripts,ollama-batch-download.sh,Téléchargement batch modèles Ollama,Done,Done,Done,Done,Todo,Exécutable: ollama-batch-download.sh; logs: 8_Scripts/8.1_Init/logs/,,
+Init Scripts,reset_ollama_service.sh,Reset du service Ollama,Done,Done,Done,Done,Todo,Exécutable: reset_ollama_service.sh,,
+FastAPI Scripts,start_fastapi.sh,Démarrage API avec options --status, --force, --keep,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/start_fastapi.sh; logs: 4_Logs/
+FastAPI Scripts,test_fastapi.sh,Vérification endpoints API,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/test_fastapi.sh,,
+SQLite / Chroma Scripts,init_sqlite.sh,Initialisation DB + Chroma,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/init_sqlite.sh; DB: 3_Data/3.2_Metadata/db.sqlite,,
+SQLite / Chroma Scripts,test_sqlite.sh,Vérification insert/retrieve vecteurs,Done,Done,Done,Done,Todo,Script: 8_Scripts/8.1_Init/test_sqlite.sh,,
+Templates,DOCX / MD / PDF,Modèles documents professionnels,Done,Done,Done,Done,Todo,Path: 9_Templates/,,
+CI/CD,GitHub Actions,Automatisation tests et déploiement,Done,Done,Todo,Todo,Todo,Workflow: .github/workflows/*.yml,,
+
