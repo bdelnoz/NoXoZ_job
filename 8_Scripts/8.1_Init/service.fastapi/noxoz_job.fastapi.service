@@ -1,0 +1,26 @@
+[Unit]
+Description=FastAPI NoXoZ_job (avec --reload)
+After=network.target
+
+[Service]
+Type=forking
+User=nox
+WorkingDirectory=/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job
+
+# Fichier PID réel pour systemd
+PIDFile=/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/10_Runs/service.noxoz_job.fastapi.pid
+
+# CHEMINS ABSOLUS vers service.fastapi/start_fastapi.sh
+ExecStart=/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/8_Scripts/8.1_Init/service.fastapi/start_fastapi.sh start
+ExecStartPost=/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/8_Scripts/8.1_Init/service.fastapi/start_fastapi.sh update-pid
+ExecStop=/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/8_Scripts/8.1_Init/service.fastapi/start_fastapi.sh stop
+
+# Restart manuel uniquement
+Restart=no
+
+# Timeouts
+TimeoutStopSec=10
+TimeoutStartSec=15
+
+[Install]
+WantedBy=multi-user.target

@@ -4,12 +4,12 @@
 # Auteur: Bruno DELNOZ
 # Email: bruno.delnoz@protonmail.com
 # Target usage: Gestion FastAPI avec --reload et PID réel visible dans systemd
-# Version: v3.6.0 – Date: 2026-02-07
+# Version: v3.7.0 – Date: 2026-02-07
 #
 # CHANGELOG:
+# v3.7.0 - 2026-02-07: Renommage service noxoz_job.fastapi, fix PID file path
 # v3.6.0 - 2026-02-07: Ajout update-pid pour systemd, PID réel visible
 # v3.5.0 - 2026-02-07: Version unique --reload, capture PID réel ss -tlpn
-# v3.4.0 - 2026-02-07: Capture PID réel via ss -tlpn
 ################################################################################
 set -euo pipefail
 
@@ -29,7 +29,7 @@ KEY_FILE="$BASE_DIR/certs/key.pem"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
 PID_FILE="$RUN_DIR/fastapi.pid"
-SYSTEMD_PID_FILE="$RUN_DIR/service.fastapi_noxoz.pid"
+SYSTEMD_PID_FILE="$RUN_DIR/service.noxoz_job.fastapi.pid"
 LOG_FILE="$LOG_DIR/log.start_fastapi.$TIMESTAMP.log"
 
 ### UTILS ###
@@ -91,12 +91,12 @@ start() {
 
     # Mise à jour PID files
     echo "$real_pid" > "$PID_FILE"
-    echo "$real_pid" > "$SYSTEMD_PID_FILE" 2>/dev/null || true
+    echo "$real_pid" > "$SYSTEMD_PID_FILE"
   else
     echo "[ERROR] Échec du démarrage"
     echo "[ERROR] Aucun processus détecté sur port $PORT"
     rm -f "$PID_FILE"
-    rm -f "$SYSTEMD_PID_FILE" 2>/dev/null || true
+    rm -f "$SYSTEMD_PID_FILE"
     exit 1
   fi
 }
@@ -107,7 +107,7 @@ stop() {
   if [[ -z "$real_pid" ]]; then
     echo "[INFO] Aucun FastAPI actif sur port $PORT"
     rm -f "$PID_FILE"
-    rm -f "$SYSTEMD_PID_FILE" 2>/dev/null || true
+    rm -f "$SYSTEMD_PID_FILE"
     exit 0
   fi
 
@@ -132,7 +132,7 @@ stop() {
   pkill -9 -f "uvicorn.*${APP_MODULE}" 2>/dev/null || true
 
   rm -f "$PID_FILE"
-  rm -f "$SYSTEMD_PID_FILE" 2>/dev/null || true
+  rm -f "$SYSTEMD_PID_FILE"
 
   if is_running; then
     echo "[ERROR] Impossible d'arrêter FastAPI complètement"

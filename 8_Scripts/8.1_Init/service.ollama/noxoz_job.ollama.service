@@ -1,0 +1,22 @@
+[Unit]
+Description=Ollama Service - NoXoZ_job
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=nox
+Group=nox
+WorkingDirectory=/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job
+ExecStart=/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/8_Scripts/8.1_Init/service.ollama/start_ollama.sh start
+ExecStop=/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/8_Scripts/8.1_Init/service.ollama/start_ollama.sh stop
+ExecStartPost=/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/8_Scripts/8.1_Init/service.ollama/start_ollama.sh update-pid
+PIDFile=/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/10_Runs/service.noxoz_job.ollama.pid
+Restart=always
+RestartSec=5
+Environment="OLLAMA_MODELS=/mnt/data1_100g/agent_llm_local/models"
+Environment="PATH=/home/nox/.opencode/bin:/home/nox/.local/bin:/home/nox/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/home/nox/.dotnet/tools:/mnt/data2_78g/Security/scripts/"
+UMask=0002
+
+[Install]
+WantedBy=multi-user.target
