@@ -1,0 +1,226 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+
+2 0 obj
+<< /Type /Pages /Kids [ 5 0 R 7 0 R ] /Count 2 >>
+endobj
+
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+
+4 0 obj
+<< /Length 3568 >>
+stream
+BT
+/F1 10 Tf
+72 770 Td
+(# Correction Audit – NoXoZ_job) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(PDF companion: `correction_audit.pdf`.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(## Objectif) Tj
+0 -12 Td
+(Corriger les incohérences, réduire les duplications, fiabiliser les chemins de données, et ) Tj
+0 -12 Td
+(clarifier les scripts/artefacts.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(## Corrections recommandées \(par thème\)) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(### 1\) Unification des chemins de données \(SQLite/Chroma\)) Tj
+0 -12 Td
+(- **Aligner tous les chemins SQLite** :) Tj
+0 -12 Td
+(  - `services/vector_store.py` utilise `3_Data/Metadata/metadata.db`.) Tj
+0 -12 Td
+(  - `8_Scripts/8.1_Init/init_sqlite.sh` crée `.../noxoz_metadata.db`.) Tj
+0 -12 Td
+(  - `api/monitor.py` pointe `.../sqlite/noxoz_metadata.db`.) Tj
+0 -12 Td
+(  - **Correction** : choisir un seul nom et un seul emplacement \(ex. ) Tj
+0 -12 Td
+(`3_Data/Metadata/noxoz_metadata.db` via symlink\), puis mettre à jour `vector_store.py`, ) Tj
+0 -12 Td
+(`status.py`, `monitor.py`, `init_sqlite.sh`.) Tj
+0 -12 Td
+(- **Uniformiser la persistance Chroma** :) Tj
+0 -12 Td
+(  - `vector_store.py` utilise `3_Data/3.1_Vectors/chroma_link`.) Tj
+0 -12 Td
+(  - `monitor.py` et `fastapi_full_monitor.py` pointent `/mnt/data1_100g/.../vectors`.) Tj
+0 -12 Td
+(  - **Correction** : standardiser sur `3_Data/3.1_Vectors/chroma_link` \(symlink\) pour éviter la) Tj
+0 -12 Td
+( divergence.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(### 2\) Nettoyage des duplications / fichiers obsolètes) Tj
+0 -12 Td
+(- **Supprimer ou archiver** :) Tj
+0 -12 Td
+(  - `2_Sources/2.1_Python/api/endpoints/status.ORI.py` \(duplicat\).) Tj
+0 -12 Td
+(  - `2_Sources/2.1_Python/api/endpoints/fastapi_full_monitor.py` \(app FastAPI autonome ) Tj
+0 -12 Td
+(redondante\).) Tj
+0 -12 Td
+(  - `temp.py` \(racine\) et `2_Sources/2.1_Python/temp.py` si non utilisés.) Tj
+0 -12 Td
+(- **Clarifier `check_all_web_python.sh`** : le renommer en `.md` ou `.txt` si c’est une note.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(### 3\) Conflit de routes FastAPI) Tj
+0 -12 Td
+(- Deux routes `/api/monitor/health` déclarées \(monitor + status_web\).) Tj
+0 -12 Td
+(- **Correction** :) Tj
+0 -12 Td
+(  - Renommer l’un des endpoints \(ex. `/api/monitor/web_health`\),) Tj
+0 -12 Td
+(  - ou fusionner dans un seul endpoint unique.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(### 4\) Scripts vides / historiques) Tj
+0 -12 Td
+(- `2_Sources/2.2_Bash/create_structure.sh` et `8_Scripts/8.1_Init/create-repo.sh` sont vides.) Tj
+0 -12 Td
+(- **Correction** : soit les supprimer, soit ajouter une README indiquant qu’ils sont ) Tj
+0 -12 Td
+(placeholders.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(### 5\) Artefacts dans le repo) Tj
+0 -12 Td
+(- PID et logs présents dans l’arborescence \(`fastapi.pid`, `10_Runs/*.pid`, `4_Logs/*`\).) Tj
+0 -12 Td
+(- **Correction** :) Tj
+0 -12 Td
+(  - Ajouter un `.gitignore` pour `4_Logs/`, `10_Runs/`, `5_Outputs/`, `6_Results/`.) Tj
+0 -12 Td
+(  - Nettoyer les artefacts existants du repo.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(### 6\) Dossier utils contenant des fichiers PS) Tj
+0 -12 Td
+(- `8_Scripts/8.2_Utils/argparse`, `datetime`, `json`, `requests`, `sys` sont des fichiers ) Tj
+0 -12 Td
+(PostScript exportés par ImageMagick.) Tj
+0 -12 Td
+(- **Correction** :) Tj
+0 -12 Td
+(  - déplacer ces fichiers dans un dossier `assets/` ou `docs/` s’ils sont utiles,) Tj
+0 -12 Td
+(  - ou les supprimer si ce sont des exports temporaires.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(### 7\) Documentation) Tj
+0 -12 Td
+(- Le README inclut une arborescence qui ne correspond plus exactement au repo actuel.) Tj
+0 -12 Td
+(- **Correction** :) Tj
+ET
+endstream
+endobj
+
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 4 0 R >>
+endobj
+
+6 0 obj
+<< /Length 1505 >>
+stream
+BT
+/F1 10 Tf
+72 770 Td
+(  - mettre à jour la section arborescence,) Tj
+0 -12 Td
+(  - mentionner explicitement les chemins réels utilisés \(symlinks, volumes\).) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(## Corrections techniques détaillées \(propositions\)) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(1. **Harmoniser les chemins SQLite**) Tj
+0 -12 Td
+(   - Choix recommandé : `3_Data/Metadata/noxoz_metadata.db` \(symlink vers `/mnt/.../sqlite`\).) Tj
+0 -12 Td
+(   - Modifier :) Tj
+0 -12 Td
+(     - `services/vector_store.py` → `METADATA_DB` vers `noxoz_metadata.db`.) Tj
+0 -12 Td
+(     - `api/monitor.py` → `SQLITE_DB` vers le même chemin.) Tj
+0 -12 Td
+(     - `api/endpoints/status.py` → utilise `METADATA_DB` unifié.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(2. **Conflit `monitor/health`**) Tj
+0 -12 Td
+(   - Renommer `status_web.py` endpoint health en `/api/monitor/web_health`.) Tj
+0 -12 Td
+(   - Ou supprimer le health de `status_web.py` et garder celui de `monitor.py`.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(3. **Réduction des scripts d’init**) Tj
+0 -12 Td
+(   - Converger vers `config_paths.sh` + `init_sqlite.sh` comme sources de vérité.) Tj
+0 -12 Td
+(   - Marquer `init_fastapi.sh` comme historique si non utilisé.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(4. **Nettoyage Git**) Tj
+0 -12 Td
+(   - Ajouter `.gitignore` pour logs/outputs/pids.) Tj
+0 -12 Td
+(   - Supprimer les artefacts présents.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(---) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(*Ce fichier liste des corrections à appliquer sur la base de l’audit.*) Tj
+ET
+endstream
+endobj
+
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 6 0 R >>
+endobj
+
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000123 00000 n 
+0000000193 00000 n 
+0000003813 00000 n 
+0000003939 00000 n 
+0000005496 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+5622
+%%EOF

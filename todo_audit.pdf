@@ -1,0 +1,103 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+
+2 0 obj
+<< /Type /Pages /Kids [ 5 0 R ] /Count 1 >>
+endobj
+
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+
+4 0 obj
+<< /Length 1894 >>
+stream
+BT
+/F1 10 Tf
+72 770 Td
+(# TODO Audit – NoXoZ_job) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(PDF companion: `todo_audit.pdf`.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(## P0 – Critiques \(fiabilité & runtime\)) Tj
+0 -12 Td
+(- [ ] **Unifier les chemins SQLite** \(choisir `noxoz_metadata.db` ou `metadata.db`, aligner ) Tj
+0 -12 Td
+(code + scripts\).) Tj
+0 -12 Td
+(- [ ] **Corriger le conflit de route `/api/monitor/health`** \(renommage ou fusion\).) Tj
+0 -12 Td
+(- [ ] **Harmoniser le chemin Chroma** \(code + scripts + monitoring\).) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(## P1 – Qualité & maintenance) Tj
+0 -12 Td
+(- [ ] Supprimer/archiver `status.ORI.py` et `fastapi_full_monitor.py` si non utilisés.) Tj
+0 -12 Td
+(- [ ] Nettoyer les `temp.py` si ce sont des scripts de test locaux.) Tj
+0 -12 Td
+(- [ ] Renommer `check_all_web_python.sh` en `.md` ou `.txt` \(ou ajouter un shebang + exécution ) Tj
+0 -12 Td
+(réelle\).) Tj
+0 -12 Td
+(- [ ] Documenter l’usage réel de `init_fastapi.sh` vs `config_paths.sh`.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(## P2 – Hygiène repo & clarté) Tj
+0 -12 Td
+(- [ ] Ajouter `.gitignore` pour `4_Logs/`, `10_Runs/`, `5_Outputs/`, `6_Results/`.) Tj
+0 -12 Td
+(- [ ] Déplacer les fichiers PS \(`8_Scripts/8.2_Utils/*`\) dans `docs/assets/` ou supprimer.) Tj
+0 -12 Td
+(- [ ] Clarifier les scripts vides \(supprimer `create-repo.sh`, `create_structure.sh` ou ajouter) Tj
+0 -12 Td
+( README\).) Tj
+0 -12 Td
+(- [ ] Mettre à jour la section arborescence du README.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(## P3 – Améliorations futures) Tj
+0 -12 Td
+(- [ ] Ajouter un vrai dossier `tests/` avec pytest + fixtures.) Tj
+0 -12 Td
+(- [ ] Ajouter un healthcheck unique exposant tous les composants.) Tj
+0 -12 Td
+(- [ ] Écrire un `Makefile` ou `taskfile` pour les commandes standard.) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(---) Tj
+0 -12 Td
+() Tj
+0 -12 Td
+(*Ce fichier fournit la liste d’actions issues de l’audit.*) Tj
+ET
+endstream
+endobj
+
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 4 0 R >>
+endobj
+
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000117 00000 n 
+0000000187 00000 n 
+0000002133 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2259
+%%EOF
