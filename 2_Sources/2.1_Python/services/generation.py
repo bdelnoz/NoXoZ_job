@@ -4,7 +4,8 @@ import subprocess
 from .vector_store import search_similar
 from docx import Document
 
-OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent / "5_Outputs" / "DOCX"
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+OUTPUT_DIR = PROJECT_ROOT / "5_Outputs" / "DOCX"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 def generate_document(prompt: str, template: str = "default"):

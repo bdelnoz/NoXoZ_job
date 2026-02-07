@@ -16,10 +16,21 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from pypdf import PdfReader
 import docx
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "3_Data"
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+DATA_DIR = PROJECT_ROOT / "3_Data"
+
 VECTORS_DIR = DATA_DIR / "3.1_Vectors" / "chroma_link"
-METADATA_DB = DATA_DIR / "3.2_Metadata" / "metadata.db"
+if not VECTORS_DIR.exists():
+    legacy_vectors_dir = DATA_DIR / "Vectors" / "chroma_link"
+    if legacy_vectors_dir.exists():
+        VECTORS_DIR = legacy_vectors_dir
+
+metadata_dir = DATA_DIR / "Metadata"
+if not metadata_dir.exists():
+    legacy_metadata_dir = DATA_DIR / "3.2_Metadata"
+    if legacy_metadata_dir.exists():
+        metadata_dir = legacy_metadata_dir
+METADATA_DB = metadata_dir / "metadata.db"
 VECTORS_DIR.mkdir(parents=True, exist_ok=True)
 METADATA_DB.parent.mkdir(parents=True, exist_ok=True)
 

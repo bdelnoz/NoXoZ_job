@@ -37,7 +37,7 @@ Ce README est une ressource complète pour comprendre le projet, le déployer et
 * **Génération de documents** : lettres de motivation, CV personnalisés, emails.
 * **Stockage vectoriel et sémantique** : Chroma + SQLite.
 * **API RESTful** : endpoints FastAPI pour upload, génération, requêtes.
-* **Interface web locale** : accessible uniquement sur `127.0.0.1:11111`.
+* **Interface web locale** : accessible uniquement sur `https://127.0.0.1:8443`.
 * **Pipeline CI/CD** : automatisation avec GitHub Actions.
 * **Déploiement conteneurisé** : Docker Compose pour isoler et réutiliser les composants.
 * **Sécurité et contrôle** : isolation des agents, accès utilisateur/role, logging complet.
@@ -53,7 +53,7 @@ L’interface web est le point central de l’interaction avec l’agent.
 * Champ input pour prompt
 * Bouton **Send** pour envoyer la requête
 * Affichage du résultat généré par le LLM
-* Fonctionne uniquement sur `127.0.0.1:11111`
+* Fonctionne uniquement sur `https://127.0.0.1:8443`
 
 ### Évolutions prévues
 
@@ -180,12 +180,12 @@ NoXoZ_job/
 │       ├── structure.md
 │       └── table.csv
 ├── 2_Sources/
-│   ├── Python/
+│   ├── 2.1_Python/
 │   │   └── main_agent.py
-│   └── Bash/
+│   └── 2.2_Bash/
 │       └── create_structure.sh
 ├── 3_Data/
-│   ├── Vectors/
+│   ├── 3.1_Vectors/
 │   │   ├── chroma_link -> /mnt/data1_100g/agent_llm_local/vectors
 │   │   └── models_link -> /mnt/data1_100g/agent_llm_local/models
 │   └── Metadata/
@@ -227,8 +227,8 @@ NoXoZ_job/
 3. Installer Ollama et télécharger les modèles dans le dossier configuré
 4. Configurer la base de données SQLite + Chroma
 5. Lancer les scripts d'initialisation pour créer la structure et logs
-6. Démarrer l’API FastAPI : `uvicorn main:app --reload --port 11111`
-7. Accéder à l’interface web sur `http://127.0.0.1:11111`
+6. Démarrer l’API FastAPI : `uvicorn main:app --reload --port 8443 --ssl-keyfile certs/key.pem --ssl-certfile certs/cert.pem`
+7. Accéder à l’interface web sur `https://127.0.0.1:8443`
 8. Upload des fichiers, génération des documents, suivi du statut des composants
 
 ---
