@@ -116,7 +116,7 @@
 
 ### Tests
 - 2_Sources/2.1_Python/test_db_huffing.py
-- 2_Sources/2.1_Python/test_sentence_transfomers.py
+- 2_Sources/2.1_Python/test_sentence_transformers.py
 
 ### Autres
 - temp.py
@@ -226,7 +226,7 @@
 
 ### Tests
 - Rôle fonctionnel: scripts de test manuels pour embeddings et Chroma.
-- Fichiers clés: test_db_huffing.py, test_sentence_transfomers.py.
+- Fichiers clés: test_db_huffing.py, test_sentence_transformers.py.
 
 ## 4.2.3 Structure globale
 
@@ -316,7 +316,7 @@ Organisation des routes: 2_Sources/2.1_Python/api/router.py (prefix /api)
 | services.ingestion | 2_Sources/2.1_Python/services/ingestion.py | Sauvegarde + ingestion | fastapi.UploadFile, shutil | fastapi | Module |
 | services.generation | 2_Sources/2.1_Python/services/generation.py | Génération doc via Ollama | subprocess, docx | python-docx, ollama CLI | Module |
 | chroma_integration | 2_Sources/2.1_Python/chroma_integration.py | Script d’intégration Chroma | chromadb, embedding_functions | chromadb | Script (__main__) |
-| test_sentence_transfomers | 2_Sources/2.1_Python/test_sentence_transfomers.py | Test embeddings | sentence_transformers | sentence-transformers | Script |
+| test_sentence_transformers | 2_Sources/2.1_Python/test_sentence_transformers.py | Test embeddings | sentence_transformers | sentence-transformers | Script |
 | test_db_huffing | 2_Sources/2.1_Python/test_db_huffing.py | Test Chroma + embeddings | chromadb, sentence_transformers | chromadb, sentence-transformers | Script |
 | temp | 2_Sources/2.1_Python/temp.py | UNKNOWN | UNKNOWN | UNKNOWN | Script |
 | md_compressor | 8_Scripts/8.2_Utils/md_compressor.py | Utilitaire compression MD | UNKNOWN | UNKNOWN | Script |

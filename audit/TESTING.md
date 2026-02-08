@@ -14,7 +14,7 @@ Date: 2026-02-08 00:25:52
 
 ## Test files detected
 - `2_Sources/2.1_Python/test_db_huffing.py`
-- `2_Sources/2.1_Python/test_sentence_transfomers.py`
+- `2_Sources/2.1_Python/test_sentence_transformers.py`
 
 ## How to run (expected)
 ```bash

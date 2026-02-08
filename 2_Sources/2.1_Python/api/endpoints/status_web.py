@@ -25,7 +25,7 @@ PYTHON_FILES = [
     "services/vector_store.py",
     "temp.py",
     "test_db_huffing.py",
-    "test_sentence_transfomers.py"
+    "test_sentence_transformers.py"
 ]
 
 BASE_API_URL = "https://127.0.0.1:8443/api"
@@ -175,10 +175,14 @@ async def web_status():
     html += "</table></body></html>"
     return HTMLResponse(content=html)
 
-# Endpoint pour lire un fichier Python
+# Endpoint pour lire un fichier texte autorisé
 @router.get("/read_file", response_class=HTMLResponse)
 async def read_file(file_path: str):
-    full_path = REPO_ROOT / file_path
+    full_path = (REPO_ROOT / file_path).resolve()
+    try:
+        full_path.relative_to(REPO_ROOT)
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Access denied")
     allowed_suffixes = {".py", ".sh", ".txt", ".md", ".markdown"}
     if not full_path.exists() or full_path.suffix.lower() not in allowed_suffixes:
         raise HTTPException(status_code=404, detail="File not found")
