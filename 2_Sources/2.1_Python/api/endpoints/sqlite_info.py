@@ -160,7 +160,6 @@ async def list_documents(limit: int = 200) -> JSONResponse:
         "limit": limit,
     })
 
-
 @router.get("/uploads")
 async def list_uploads() -> JSONResponse:
     items: list[dict[str, Any]] = []
