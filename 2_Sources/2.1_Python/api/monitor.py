@@ -27,25 +27,6 @@ CHROMA_DIR = str(VECTORS_DIR)
 SQLITE_DB = str(METADATA_DB)
 LOG_DIR = str(PROJECT_ROOT / "4_Logs")
 LAST_PROMPT_FILE = str(PROJECT_ROOT / "7_Infos" / "PERMANENT_MEMORY.md")
-<<<<<<< ours
-
-# =========================
-# INITIALISATION CHROMA CLIENT
-# =========================
-try:
-    chroma_client = chromadb.Client(Settings(
-        persist_directory=CHROMA_DIR,
-        anonymized_telemetry=False
-    ))
-    emb_func = embedding_functions.HuggingFaceEmbeddingFunction(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
-    CHROMA_AVAILABLE = True
-except Exception as e:
-    CHROMA_AVAILABLE = False
-    CHROMA_ERROR = str(e)
-=======
->>>>>>> theirs
 
 # =========================
 # HELPER FUNCTIONS
