@@ -26,11 +26,19 @@ import os
 import json
 import hashlib
 import sqlite3
+import time
+import threading
+from contextlib import contextmanager
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 from datetime import datetime, timezone
 
 import chromadb
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - non-POSIX platforms
+    fcntl = None
 
 # Embeddings (LangChain community)
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -92,6 +100,9 @@ UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 # Ensure dirs exist
 VECTORS_DIR.mkdir(parents=True, exist_ok=True)
 METADATA_DB.parent.mkdir(parents=True, exist_ok=True)
+
+SQLITE_LOCK_PATH = METADATA_DB.with_suffix(".lock")
+_SQLITE_THREAD_LOCK = threading.Lock()
 
 
 # ==============================================================================
@@ -394,6 +405,43 @@ def delete_file_records(cursor: sqlite3.Cursor, file_id: str):
     cursor.execute("DELETE FROM files WHERE file_id = ?;", (file_id,))
 
 
+def _run_sqlite_with_retry(operation, max_retries: int = 6, base_delay: float = 0.2):
+    """
+    Exécute une opération SQLite avec retry si "database is locked".
+    """
+    last_err = None
+    for attempt in range(max_retries):
+        try:
+            return operation()
+        except sqlite3.OperationalError as exc:
+            if "database is locked" not in str(exc).lower():
+                raise
+            last_err = exc
+            time.sleep(base_delay * (2 ** attempt))
+    if last_err is not None:
+        raise last_err
+
+
+@contextmanager
+def _acquire_sqlite_lock():
+    """
+    Verrouille l'accès aux écritures SQLite (thread + process).
+    """
+    _SQLITE_THREAD_LOCK.acquire()
+    lock_file = None
+    try:
+        if fcntl is not None:
+            SQLITE_LOCK_PATH.parent.mkdir(parents=True, exist_ok=True)
+            lock_file = open(SQLITE_LOCK_PATH, "a+")
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+        yield
+    finally:
+        if fcntl is not None and lock_file is not None:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+            lock_file.close()
+        _SQLITE_THREAD_LOCK.release()
+
+
 # ==============================================================================
 # 5) LOADERS: extraction texte (simple, 1 chunk par fichier)
 # ==============================================================================
@@ -443,7 +491,6 @@ def ingest_file(
       - si même file_id reingesté / reuploadé => version++ dans files
     """
     client, collection = init_chroma()
-    conn, cursor = init_sqlite()
 
     # --- identification fichier ---
     p = Path(file_path)
@@ -451,33 +498,6 @@ def ingest_file(
     size_bytes = p.stat().st_size if p.exists() else 0
     file_sha = sha256_file(str(p))
     file_id = file_sha  # stable
-
-    # --- upsert metadata file ---
-    upsert_file_record(
-        cursor=cursor,
-        file_id=file_id,
-        original_name=p.name,
-        stored_path=str(p),
-        ext=ext,
-        size_bytes=size_bytes,
-        sha256=file_sha,
-        status="ingesting",
-        bump_version=bump_version,
-    )
-    conn.commit()
-
-    # --- (optionnel) purge avant reingest ---
-    if reingest:
-        try:
-            cursor.execute("SELECT chunk_id FROM documents WHERE file_id = ? AND chunk_id IS NOT NULL;", (file_id,))
-            existing = [r[0] for r in cursor.fetchall() if r and r[0]]
-            if existing:
-                collection.delete(ids=existing)
-        except Exception:
-            pass
-
-        cursor.execute("DELETE FROM documents WHERE file_id = ?;", (file_id,))
-        conn.commit()
 
     # --- extraction texte ---
     texts = load_file_text(str(p))
@@ -507,22 +527,59 @@ def ingest_file(
     except Exception:
         pass
 
-    # --- write SQLite documents ---
-    now = datetime.now(timezone.utc).isoformat()
-    for i, chunk_id in enumerate(chunk_ids):
-        cursor.execute("""
-            INSERT OR REPLACE INTO documents (chunk_id, file_id, chunk_index, source_path, ingestion_date)
-            VALUES (?, ?, ?, ?, ?)
-        """, (chunk_id, file_id, i, str(p), now))
+    def _write_sqlite():
+        with _acquire_sqlite_lock():
+            conn, cursor = init_sqlite()
+            try:
+                # --- upsert metadata file ---
+                upsert_file_record(
+                    cursor=cursor,
+                    file_id=file_id,
+                    original_name=p.name,
+                    stored_path=str(p),
+                    ext=ext,
+                    size_bytes=size_bytes,
+                    sha256=file_sha,
+                    status="ingesting",
+                    bump_version=bump_version,
+                )
+                conn.commit()
 
-    # --- finalize status ---
-    cursor.execute(
-        "UPDATE files SET status = ?, updated_at = ? WHERE file_id = ?;",
-        ("ingested", now, file_id),
-    )
+                # --- (optionnel) purge avant reingest ---
+                if reingest:
+                    try:
+                        cursor.execute(
+                            "SELECT chunk_id FROM documents WHERE file_id = ? AND chunk_id IS NOT NULL;",
+                            (file_id,),
+                        )
+                        existing = [r[0] for r in cursor.fetchall() if r and r[0]]
+                        if existing:
+                            collection.delete(ids=existing)
+                    except Exception:
+                        pass
 
-    conn.commit()
-    conn.close()
+                    cursor.execute("DELETE FROM documents WHERE file_id = ?;", (file_id,))
+                    conn.commit()
+
+                # --- write SQLite documents ---
+                now = datetime.now(timezone.utc).isoformat()
+                for i, chunk_id in enumerate(chunk_ids):
+                    cursor.execute("""
+                        INSERT OR REPLACE INTO documents (chunk_id, file_id, chunk_index, source_path, ingestion_date)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (chunk_id, file_id, i, str(p), now))
+
+                # --- finalize status ---
+                cursor.execute(
+                    "UPDATE files SET status = ?, updated_at = ? WHERE file_id = ?;",
+                    ("ingested", now, file_id),
+                )
+
+                conn.commit()
+            finally:
+                conn.close()
+
+    _run_sqlite_with_retry(_write_sqlite)
 
     return {
         "status": "ok",
