@@ -135,6 +135,8 @@ async def manual_operation():
                             <button class="secondary" type="button" id="serverIngestBtn">Ingestion serveur</button>
                             <a class="secondary" style="text-decoration:none; display:inline-block; padding:10px 16px; border-radius:4px;"
                                href="/manual_log">Voir logs</a>
+                            <a class="secondary" style="text-decoration:none; display:inline-block; padding:10px 16px; border-radius:4px;"
+                               href="/sqlite_info">SQLite info</a>
                         </div>
                     </form>
 
@@ -317,6 +319,8 @@ async def manual_log():
                     <span class="muted" id="lastUpdate">Dernière mise à jour : -</span>
                     <span class="muted">|</span>
                     <a href="/manual_operation">Retour</a>
+                    <span class="muted">|</span>
+                    <a href="/sqlite_info">SQLite info</a>
                 </div>
                 <table>
                     <thead>
@@ -375,6 +379,291 @@ async def manual_log():
 
                 refreshBtn.addEventListener("click", loadLogs);
                 loadLogs();
+            </script>
+        </body>
+        </html>
+        """
+    )
+
+
+# ----------------------------------------------------------------------
+# UI: SQLite Info
+# ----------------------------------------------------------------------
+@app.get("/sqlite_info", response_class=HTMLResponse, include_in_schema=False)
+async def sqlite_info():
+    return HTMLResponse(
+        r"""
+        <html>
+        <head>
+            <title>SQLite Info</title>
+            <style>
+                body { font-family: Arial, sans-serif; background:#1e1e1e; color:#f0f0f0; }
+                .container { max-width: 1200px; margin: 40px auto; padding: 20px; }
+                h1, h2 { text-align: center; }
+                .card { background:#252525; padding: 20px; border-radius: 8px; margin-top: 20px; }
+                .controls { display:flex; gap: 12px; align-items:center; flex-wrap: wrap; }
+                button { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; }
+                .primary { background:#4fc3f7; color:#0b0b0b; }
+                .secondary { background:#444; color:#fff; }
+                .muted { color:#aaa; font-size: 0.9em; }
+                textarea, input[type=\"number\"] { width: 100%; padding: 8px; margin-top: 6px; background:#1a1a1a; color:#f0f0f0; border:1px solid #444; border-radius:4px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+                th, td { border: 1px solid #444; padding: 8px; text-align: left; vertical-align: top; }
+                th { background:#333; }
+                td { background:#222; }
+                pre { white-space: pre-wrap; margin: 0; }
+                a { color:#4fc3f7; }
+                .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>SQLite Info</h1>
+                <div class="controls">
+                    <a class="secondary" style="text-decoration:none; display:inline-block; padding:8px 12px; border-radius:4px;"
+                       href="/manual_operation">Retour</a>
+                    <span class="muted" id="dbPath">DB: -</span>
+                </div>
+
+                <div class="card">
+                    <h2>Tables SQLite</h2>
+                    <div id="tables">Chargement...</div>
+                </div>
+
+                <div class="card">
+                    <h2>Fichiers (table files)</h2>
+                    <div class="controls">
+                        <button class="secondary" id="refreshFilesTable">Rafraîchir</button>
+                    </div>
+                    <div id="filesTable">Chargement...</div>
+                </div>
+
+                <div class="card">
+                    <h2>Documents (table documents)</h2>
+                    <div class="controls">
+                        <button class="secondary" id="refreshDocsTable">Rafraîchir</button>
+                    </div>
+                    <div id="documentsTable">Chargement...</div>
+                </div>
+
+                <div class="card">
+                    <h2>Fichiers uploadés (dossier)</h2>
+                    <div class="controls">
+                        <button class="secondary" id="refreshUploads">Rafraîchir</button>
+                    </div>
+                    <div id="uploads">Chargement...</div>
+                </div>
+
+                <div class="card">
+                    <h2>Requête SQL (SELECT/PRAGMA)</h2>
+                    <div class="controls">
+                        <button class="secondary" id="presetFiles">Voir table files</button>
+                        <button class="secondary" id="presetDocs">Voir table documents</button>
+                    </div>
+                    <label for="queryInput">Requête</label>
+                    <textarea id="queryInput" rows="4">SELECT * FROM files ORDER BY updated_at DESC</textarea>
+                    <label for="limitInput">Limite de lignes</label>
+                    <input id="limitInput" type="number" min="1" max="1000" value="200" />
+                    <div class="controls" style="margin-top:12px;">
+                        <button class="primary" id="runQuery">Exécuter</button>
+                        <span class="muted" id="queryStatus">Statut : prêt.</span>
+                    </div>
+                    <div id="queryResult" style="margin-top:12px;">Aucun résultat.</div>
+                </div>
+            </div>
+
+            <script>
+                const API_BASE = window.location.origin;
+                const tablesEl = document.getElementById("tables");
+                const uploadsEl = document.getElementById("uploads");
+                const filesTableEl = document.getElementById("filesTable");
+                const documentsTableEl = document.getElementById("documentsTable");
+                const dbPathEl = document.getElementById("dbPath");
+                const queryInput = document.getElementById("queryInput");
+                const limitInput = document.getElementById("limitInput");
+                const queryStatus = document.getElementById("queryStatus");
+                const queryResult = document.getElementById("queryResult");
+
+                function buildTable(headers, rows) {
+                    const table = document.createElement("table");
+                    const thead = document.createElement("thead");
+                    const headRow = document.createElement("tr");
+                    headers.forEach(header => {
+                        const th = document.createElement("th");
+                        th.textContent = header;
+                        headRow.appendChild(th);
+                    });
+                    thead.appendChild(headRow);
+                    table.appendChild(thead);
+
+                    const tbody = document.createElement("tbody");
+                    if (!rows.length) {
+                        const emptyRow = document.createElement("tr");
+                        const emptyCell = document.createElement("td");
+                        emptyCell.colSpan = headers.length || 1;
+                        emptyCell.textContent = "Aucune donnée.";
+                        emptyRow.appendChild(emptyCell);
+                        tbody.appendChild(emptyRow);
+                    } else {
+                        rows.forEach(row => {
+                            const tr = document.createElement("tr");
+                            row.forEach(value => {
+                                const td = document.createElement("td");
+                                td.textContent = value === null ? "NULL" : String(value);
+                                tr.appendChild(td);
+                            });
+                            tbody.appendChild(tr);
+                        });
+                    }
+                    table.appendChild(tbody);
+                    return table;
+                }
+
+                async function loadTables() {
+                    try {
+                        const response = await fetch(`${API_BASE}/api/sqlite_info/tables`);
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || "Erreur de chargement.");
+                        }
+                        const data = await response.json();
+                        dbPathEl.textContent = `DB: ${data.db_path || "-"}`;
+
+                        if (!data.tables || !data.tables.length) {
+                            tablesEl.textContent = "Aucune table trouvée.";
+                            return;
+                        }
+
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "grid";
+                        data.tables.forEach(table => {
+                            const card = document.createElement("div");
+                            const title = document.createElement("h3");
+                            const countInfo = table.row_count === null ? "n/a" : table.row_count;
+                            title.textContent = `${table.name} (lignes: ${countInfo})`;
+                            card.appendChild(title);
+
+                            const colLines = table.columns.map(col => {
+                                const flags = [];
+                                if (col.pk) flags.push("PK");
+                                if (col.notnull) flags.push("NOT NULL");
+                                const suffix = flags.length ? ` (${flags.join(", ")})` : "";
+                                return `${col.name} : ${col.type}${suffix}`;
+                            });
+                            const pre = document.createElement("pre");
+                            pre.textContent = colLines.join("\\n");
+                            card.appendChild(pre);
+                            wrapper.appendChild(card);
+                        });
+                        tablesEl.innerHTML = \"\";
+                        tablesEl.appendChild(wrapper);
+                    } catch (err) {
+                        tablesEl.textContent = `Erreur: ${err}`;
+                    }
+                }
+
+                async function loadFilesTable() {
+                    try {
+                        const response = await fetch(`${API_BASE}/api/sqlite_info/files?limit=200`);
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || "Erreur de chargement.");
+                        }
+                        const data = await response.json();
+                        filesTableEl.innerHTML = "";
+                        filesTableEl.appendChild(buildTable(data.columns || [], data.rows || []));
+                    } catch (err) {
+                        filesTableEl.textContent = `Erreur: ${err}`;
+                    }
+                }
+
+                async function loadDocumentsTable() {
+                    try {
+                        const response = await fetch(`${API_BASE}/api/sqlite_info/documents?limit=200`);
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || "Erreur de chargement.");
+                        }
+                        const data = await response.json();
+                        documentsTableEl.innerHTML = "";
+                        documentsTableEl.appendChild(buildTable(data.columns || [], data.rows || []));
+                    } catch (err) {
+                        documentsTableEl.textContent = `Erreur: ${err}`;
+                    }
+                }
+
+                async function loadUploads() {
+                    try {
+                        const response = await fetch(`${API_BASE}/api/sqlite_info/uploads`);
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || "Erreur de chargement.");
+                        }
+                        const data = await response.json();
+                        if (!data.files || !data.files.length) {
+                            uploadsEl.textContent = "Aucun fichier uploadé.";
+                            return;
+                        }
+
+                        const headers = ["Nom", "Chemin relatif", "Taille (bytes)", "Modifié le"];
+                        const rows = data.files.map(file => [
+                            file.name,
+                            file.relative_path,
+                            file.size_bytes,
+                            file.modified_at,
+                        ]);
+                        uploadsEl.innerHTML = \"\";
+                        uploadsEl.appendChild(buildTable(headers, rows));
+                    } catch (err) {
+                        uploadsEl.textContent = `Erreur: ${err}`;
+                    }
+                }
+
+                async function runQuery() {
+                    const query = queryInput.value;
+                    const limit = Number(limitInput.value || 200);
+                    queryStatus.textContent = "Statut : exécution...";
+                    queryResult.textContent = "Chargement...";
+
+                    try {
+                        const response = await fetch(`${API_BASE}/api/sqlite_info/query`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ query, limit }),
+                        });
+                        const data = await response.json();
+                        if (!response.ok) {
+                            queryStatus.textContent = "Statut : erreur.";
+                            queryResult.textContent = data.detail || "Erreur inconnue.";
+                            return;
+                        }
+
+                        queryStatus.textContent = `Statut : OK (${data.row_count} ligne(s)).`;
+                        queryResult.innerHTML = \"\";
+                        queryResult.appendChild(buildTable(data.columns || [], data.rows || []));
+                    } catch (err) {
+                        queryStatus.textContent = "Statut : erreur.";
+                        queryResult.textContent = `Erreur: ${err}`;
+                    }
+                }
+
+                document.getElementById("runQuery").addEventListener("click", runQuery);
+                document.getElementById("presetFiles").addEventListener("click", () => {
+                    queryInput.value = "SELECT * FROM files ORDER BY updated_at DESC";
+                    runQuery();
+                });
+                document.getElementById("presetDocs").addEventListener("click", () => {
+                    queryInput.value = "SELECT * FROM documents ORDER BY ingestion_date DESC";
+                    runQuery();
+                });
+                document.getElementById("refreshUploads").addEventListener("click", loadUploads);
+                document.getElementById("refreshFilesTable").addEventListener("click", loadFilesTable);
+                document.getElementById("refreshDocsTable").addEventListener("click", loadDocumentsTable);
+
+                loadTables();
+                loadFilesTable();
+                loadDocumentsTable();
+                loadUploads();
             </script>
         </body>
         </html>
