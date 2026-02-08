@@ -89,7 +89,6 @@ async def list_tables() -> JSONResponse:
                 }
                 for col in cursor.fetchall()
             ]
-            payload.append({"name": table, "columns": columns})
             payload.append({
                 "name": table,
                 "columns": columns,

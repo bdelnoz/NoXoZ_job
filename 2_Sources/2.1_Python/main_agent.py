@@ -391,8 +391,82 @@ async def manual_log():
 # ----------------------------------------------------------------------
 @app.get("/sqlite_info", response_class=HTMLResponse, include_in_schema=False)
 async def sqlite_info():
-    return HTMLResponse(
-        r"""
+    import json
+    import sqlite3
+    from datetime import datetime
+
+    from services.vector_store import METADATA_DB, UPLOADS_DIR, ensure_sqlite_schema
+
+    def _safe_table_count(cursor: sqlite3.Cursor, table: str) -> int | None:
+        try:
+            cursor.execute(f"SELECT COUNT(*) FROM {table};")
+            return int(cursor.fetchone()[0])
+        except sqlite3.Error:
+            return None
+
+    def _fetch_table_rows(cursor: sqlite3.Cursor, table: str, limit: int = 50) -> dict[str, list]:
+        cursor.execute(f"SELECT * FROM {table} ORDER BY rowid DESC LIMIT ?;", (limit,))
+        columns = [col[0] for col in (cursor.description or [])]
+        rows = cursor.fetchall()
+        return {"columns": columns, "rows": [list(row) for row in rows]}
+
+    bootstrap = {
+        "db_path": str(METADATA_DB),
+        "tables": [],
+        "files": {"columns": [], "rows": []},
+        "documents": {"columns": [], "rows": []},
+        "uploads": {"files": []},
+        "errors": [],
+    }
+
+    try:
+        ensure_sqlite_schema()
+        conn = sqlite3.connect(METADATA_DB, timeout=5)
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
+            tables = [row[0] for row in cursor.fetchall()]
+            for table in tables:
+                cursor.execute(f"PRAGMA table_info({table});")
+                columns = [
+                    {
+                        "name": col[1],
+                        "type": col[2],
+                        "notnull": bool(col[3]),
+                        "default": col[4],
+                        "pk": bool(col[5]),
+                    }
+                    for col in cursor.fetchall()
+                ]
+                bootstrap["tables"].append({
+                    "name": table,
+                    "columns": columns,
+                    "row_count": _safe_table_count(cursor, table),
+                })
+
+            if "files" in tables:
+                bootstrap["files"] = _fetch_table_rows(cursor, "files", limit=50)
+            if "documents" in tables:
+                bootstrap["documents"] = _fetch_table_rows(cursor, "documents", limit=50)
+        finally:
+            conn.close()
+    except sqlite3.Error as exc:
+        bootstrap["errors"].append(f"SQLite error: {exc}")
+
+    if UPLOADS_DIR.exists():
+        for file_path in sorted(UPLOADS_DIR.rglob("*")):
+            if file_path.is_file():
+                stat = file_path.stat()
+                bootstrap["uploads"]["files"].append({
+                    "name": file_path.name,
+                    "relative_path": str(file_path.relative_to(UPLOADS_DIR)),
+                    "size_bytes": stat.st_size,
+                    "modified_at": datetime.utcfromtimestamp(stat.st_mtime).isoformat() + "Z",
+                })
+
+    bootstrap_json = json.dumps(bootstrap).replace("</", "<\\/")
+
+    html = r"""
         <html>
         <head>
             <title>SQLite Info</title>
@@ -472,6 +546,7 @@ async def sqlite_info():
                 </div>
             </div>
 
+            <script id="sqliteInfoBootstrap" type="application/json">__BOOTSTRAP_JSON__</script>
             <script>
                 const API_BASE = window.location.origin;
                 const tablesEl = document.getElementById("tables");
@@ -483,6 +558,43 @@ async def sqlite_info():
                 const limitInput = document.getElementById("limitInput");
                 const queryStatus = document.getElementById("queryStatus");
                 const queryResult = document.getElementById("queryResult");
+
+                function applyBootstrap(data) {
+                    if (!data) return;
+                    if (data.db_path) {
+                        dbPathEl.textContent = `DB: ${data.db_path}`;
+                    }
+
+                    if (Array.isArray(data.tables) && data.tables.length) {
+                        renderTables(data.tables);
+                    }
+
+                    if (data.files && data.files.columns) {
+                        filesTableEl.innerHTML = "";
+                        filesTableEl.appendChild(buildTable(data.files.columns, data.files.rows || []));
+                    }
+
+                    if (data.documents && data.documents.columns) {
+                        documentsTableEl.innerHTML = "";
+                        documentsTableEl.appendChild(buildTable(data.documents.columns, data.documents.rows || []));
+                    }
+
+                    if (data.uploads && Array.isArray(data.uploads.files)) {
+                        if (data.uploads.files.length === 0) {
+                            uploadsEl.textContent = "Aucun fichier uploadé.";
+                        } else {
+                            const headers = ["Nom", "Chemin relatif", "Taille (bytes)", "Modifié le"];
+                            const rows = data.uploads.files.map(file => [
+                                file.name,
+                                file.relative_path,
+                                file.size_bytes,
+                                file.modified_at,
+                            ]);
+                            uploadsEl.innerHTML = "";
+                            uploadsEl.appendChild(buildTable(headers, rows));
+                        }
+                    }
+                }
 
                 function buildTable(headers, rows) {
                     const table = document.createElement("table");
@@ -519,6 +631,32 @@ async def sqlite_info():
                     return table;
                 }
 
+                function renderTables(tables) {
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "grid";
+                    tables.forEach(table => {
+                        const card = document.createElement("div");
+                        const title = document.createElement("h3");
+                        const countInfo = table.row_count === null ? "n/a" : table.row_count;
+                        title.textContent = `${table.name} (lignes: ${countInfo})`;
+                        card.appendChild(title);
+
+                        const colLines = table.columns.map(col => {
+                            const flags = [];
+                            if (col.pk) flags.push("PK");
+                            if (col.notnull) flags.push("NOT NULL");
+                            const suffix = flags.length ? ` (${flags.join(", ")})` : "";
+                            return `${col.name} : ${col.type}${suffix}`;
+                        });
+                        const pre = document.createElement("pre");
+                        pre.textContent = colLines.join("\\n");
+                        card.appendChild(pre);
+                        wrapper.appendChild(card);
+                    });
+                    tablesEl.innerHTML = "";
+                    tablesEl.appendChild(wrapper);
+                }
+
                 async function loadTables() {
                     try {
                         const response = await fetch(`${API_BASE}/api/sqlite_info/tables`);
@@ -534,38 +672,12 @@ async def sqlite_info():
                             return;
                         }
 
-                        const wrapper = document.createElement("div");
-                        wrapper.className = "grid";
-                        data.tables.forEach(table => {
-                            const card = document.createElement("div");
-                            const title = document.createElement("h3");
-                            const countInfo = table.row_count === null ? "n/a" : table.row_count;
-                            title.textContent = `${table.name} (lignes: ${countInfo})`;
-                            title.textContent = table.name;
-                            card.appendChild(title);
-
-                            const colLines = table.columns.map(col => {
-                                const flags = [];
-                                if (col.pk) flags.push("PK");
-                                if (col.notnull) flags.push("NOT NULL");
-                                const suffix = flags.length ? ` (${flags.join(", ")})` : "";
-                                return `${col.name} : ${col.type}${suffix}`;
-                            });
-                            const pre = document.createElement("pre");
-                            pre.textContent = colLines.join("\\n");
-                            card.appendChild(pre);
-                            wrapper.appendChild(card);
-                        });
-                        tablesEl.innerHTML = \"\";
-                        tablesEl.appendChild(wrapper);
+                        renderTables(data.tables);
                     } catch (err) {
                         tablesEl.textContent = `Erreur: ${err}`;
                     }
                 }
 
-                async function loadUploads() {
-                    try {
-                        const response = await fetch(`${API_BASE}/api/sqlite_info/uploads`);
                 async function loadFilesTable() {
                     try {
                         const response = await fetch(`${API_BASE}/api/sqlite_info/files?limit=200`);
@@ -661,9 +773,18 @@ async def sqlite_info():
                     runQuery();
                 });
                 document.getElementById("refreshUploads").addEventListener("click", loadUploads);
-                loadTables();
                 document.getElementById("refreshFilesTable").addEventListener("click", loadFilesTable);
                 document.getElementById("refreshDocsTable").addEventListener("click", loadDocumentsTable);
+
+                const bootstrapEl = document.getElementById("sqliteInfoBootstrap");
+                if (bootstrapEl) {
+                    try {
+                        const data = JSON.parse(bootstrapEl.textContent);
+                        applyBootstrap(data);
+                    } catch (err) {
+                        console.warn("Bootstrap data invalid", err);
+                    }
+                }
 
                 loadTables();
                 loadFilesTable();
@@ -673,7 +794,7 @@ async def sqlite_info():
         </body>
         </html>
         """
-    )
+    return HTMLResponse(html.replace("__BOOTSTRAP_JSON__", bootstrap_json))
 
 
 # Inclure le router principal avec préfixe /api
