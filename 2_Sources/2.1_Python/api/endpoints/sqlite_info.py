@@ -54,9 +54,6 @@ def _run_query(query: str, limit: int) -> SqliteQueryResult:
     finally:
         conn.close()
 
-
-<<<<<<< ours
-=======
 def _safe_table_count(cursor: sqlite3.Cursor, table: str) -> int | None:
     try:
         cursor.execute(f"SELECT COUNT(*) FROM {table};")
@@ -65,7 +62,6 @@ def _safe_table_count(cursor: sqlite3.Cursor, table: str) -> int | None:
         return None
 
 
->>>>>>> theirs
 @router.get("/tables")
 async def list_tables() -> JSONResponse:
     ensure_sqlite_schema()
