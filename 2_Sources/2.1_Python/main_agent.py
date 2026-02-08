@@ -70,6 +70,7 @@ async def manual_operation():
                         <div class="actions">
                             <button class="primary" type="submit">Uploader</button>
                             <button class="secondary" type="reset">Réinitialiser</button>
+                            <button class="secondary" type="button" id="serverIngestBtn" style="display:none;">Ingestion serveur</button>
                         </div>
                     </form>
                     <div class="note">Les options sélectionnées sont affichées à titre informatif côté UI.</div>
@@ -84,6 +85,103 @@ async def manual_operation():
                 const status = document.getElementById("status");
                 const details = document.getElementById("details");
                 const stepList = document.getElementById("stepList");
+                const serverIngestBtn = document.getElementById("serverIngestBtn");
+
+                const params = new URLSearchParams(window.location.search);
+                const fileTypeParam = params.get("fileType");
+                const operationModeParam = params.get("operationMode");
+                const fileNameParam = params.get("file");
+                const promptParam = params.get("prompt");
+
+                if (fileTypeParam) {
+                    const fileTypeSelect = document.getElementById("fileType");
+                    fileTypeSelect.value = fileTypeParam;
+                }
+
+                if (operationModeParam) {
+                    const operationModeSelect = document.getElementById("operationMode");
+                    operationModeSelect.value = operationModeParam;
+                }
+
+                if (promptParam) {
+                    details.textContent = `Détails : prompt=${promptParam}`;
+                }
+
+                if (operationModeParam || fileNameParam) {
+                    status.textContent = `Statut : prérempli (mode=${operationModeParam || "n/a"}, fichier=${fileNameParam || "n/a"}).`;
+                }
+
+                async function handleUploadResponse(response) {
+                    let result = null;
+                    try {
+                        result = await response.json();
+                    } catch (err) {
+                        status.textContent = "Statut : réponse non-JSON reçue.";
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        status.textContent = `Statut : erreur (${response.status})`;
+                        details.textContent = `Détails : ${result.message || "Erreur inconnue"}`;
+                        if (result.steps && result.steps.length) {
+                            const stepsHtml = result.steps.map((step, index) => {
+                                const line = `${index + 1}. ${step.timestamp} - ${step.message}`;
+                                const className = step.status === "error" ? "step-item fail" : "step-item";
+                                return `<div class="${className}">${line}</div>`;
+                            }).join("");
+                            stepList.innerHTML = stepsHtml;
+                        } else {
+                            stepList.innerHTML = "<div style='color:#ff6b6b;'>Échec: voir les détails.</div>";
+                        }
+                        return;
+                    }
+
+                    status.textContent = `Statut : ${result.status} - ${result.filename || ""}`;
+                    if (result.result && result.result.message) {
+                        details.textContent = `Détails : ${result.result.message}`;
+                    } else {
+                        details.textContent = "Détails : upload terminé.";
+                    }
+
+                    if (result.result && result.result.steps && result.result.steps.length) {
+                        const stepsHtml = result.result.steps.map((step, index) => {
+                            const line = `${index + 1}. ${step.timestamp} - ${step.message}`;
+                            const className = step.status === "error" ? "step-item fail" : "step-item";
+                            return `<div class="${className}">${line}</div>`;
+                        }).join("");
+                        stepList.innerHTML = stepsHtml;
+                    } else {
+                        stepList.innerHTML = "<div>Aucune étape reçue.</div>";
+                    }
+                }
+
+                async function uploadServerFile(relativePath) {
+                    status.textContent = "Statut : ingestion serveur en cours...";
+                    details.textContent = `Détails : source serveur=${relativePath}`;
+                    stepList.innerHTML = "<div>En attente des étapes...</div>";
+                    try {
+                        const response = await fetch("/api/upload/server-file", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({ relative_path: relativePath })
+                        });
+                        await handleUploadResponse(response);
+                    } catch (err) {
+                        status.textContent = "Statut : erreur réseau.";
+                        details.textContent = `Détails : ${err}`;
+                        stepList.innerHTML = "<div style='color:#ff6b6b;'>Échec: erreur réseau.</div>";
+                    }
+                }
+
+                if (fileNameParam) {
+                    serverIngestBtn.style.display = "inline-block";
+                    serverIngestBtn.addEventListener("click", () => uploadServerFile(fileNameParam));
+                    if (operationModeParam === "ingest") {
+                        uploadServerFile(fileNameParam);
+                    }
+                }
 
                 const params = new URLSearchParams(window.location.search);
                 const fileTypeParam = params.get("fileType");
@@ -132,47 +230,7 @@ async def manual_operation():
                             method: "POST",
                             body: data
                         });
-                        let result = null;
-                        try {
-                            result = await response.json();
-                        } catch (err) {
-                            status.textContent = "Statut : réponse non-JSON reçue.";
-                            return;
-                        }
-
-                        if (!response.ok) {
-                            status.textContent = `Statut : erreur (${response.status})`;
-                            details.textContent = `Détails : ${result.message || "Erreur inconnue"}`;
-                            if (result.steps && result.steps.length) {
-                                const stepsHtml = result.steps.map((step, index) => {
-                                    const line = `${index + 1}. ${step.timestamp} - ${step.message}`;
-                                    const className = step.status === "error" ? "step-item fail" : "step-item";
-                                    return `<div class="${className}">${line}</div>`;
-                                }).join("");
-                                stepList.innerHTML = stepsHtml;
-                            } else {
-                                stepList.innerHTML = "<div style='color:#ff6b6b;'>Échec: voir les détails.</div>";
-                            }
-                            return;
-                        }
-
-                        status.textContent = `Statut : ${result.status} - ${result.filename || ""}`;
-                        if (result.result && result.result.message) {
-                            details.textContent = `Détails : ${result.result.message}`;
-                        } else {
-                            details.textContent = "Détails : upload terminé.";
-                        }
-
-                        if (result.result && result.result.steps && result.result.steps.length) {
-                            const stepsHtml = result.result.steps.map((step, index) => {
-                                const line = `${index + 1}. ${step.timestamp} - ${step.message}`;
-                                const className = step.status === "error" ? "step-item fail" : "step-item";
-                                return `<div class="${className}">${line}</div>`;
-                            }).join("");
-                            stepList.innerHTML = stepsHtml;
-                        } else {
-                            stepList.innerHTML = "<div>Aucune étape reçue.</div>";
-                        }
+                        await handleUploadResponse(response);
                     } catch (err) {
                         status.textContent = "Statut : erreur réseau.";
                         details.textContent = `Détails : ${err}`;
