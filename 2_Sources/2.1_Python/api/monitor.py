@@ -253,6 +253,12 @@ async def full_monitor():
     }
     return JSONResponse(content=response)
 
+@router.get("/status")
+async def status_monitor():
+    """
+    Endpoint status check simple
+    """
+    return JSONResponse({"status": "ok", "endpoint": "monitor"})
 
 @router.get("/health")
 async def health_monitor():

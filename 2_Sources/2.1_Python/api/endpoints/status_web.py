@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from pathlib import Path
 import httpx
 
@@ -97,8 +97,3 @@ async def read_file(file_path: str):
     content = full_path.read_text()
     content = content.replace("<", "&lt;").replace(">", "&gt;")
     return HTMLResponse(f"<pre>{content}</pre>")
-
-# Endpoint health
-@router.get("/health")
-async def health_statusweb():
-    return JSONResponse({"status": "ok", "endpoint": "status"})
