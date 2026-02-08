@@ -11,37 +11,22 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 import chromadb
 from chromadb.config import Settings
-from chromadb.utils import embedding_functions
 import sqlite3
 import os
 import subprocess
 from pathlib import Path
+from services.vector_store import METADATA_DB, VECTORS_DIR
 
 router = APIRouter()
 
 # =========================
 # CONFIGURATION PATHS
 # =========================
-CHROMA_DIR = "/mnt/data1_100g/agent_llm_local/vectors"
-SQLITE_DB = "/mnt/data1_100g/agent_llm_local/sqlite/noxoz_metadata.db"
-LOG_DIR = "./4_Logs"
-LAST_PROMPT_FILE = "./7_Infos/PERMANENT_MEMORY.md"
-
-# =========================
-# INITIALISATION CHROMA CLIENT
-# =========================
-try:
-    chroma_client = chromadb.Client(Settings(
-        persist_directory=CHROMA_DIR,
-        anonymized_telemetry=False
-    ))
-    emb_func = embedding_functions.HuggingFaceEmbeddingFunction(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
-    CHROMA_AVAILABLE = True
-except Exception as e:
-    CHROMA_AVAILABLE = False
-    CHROMA_ERROR = str(e)
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+CHROMA_DIR = str(VECTORS_DIR)
+SQLITE_DB = str(METADATA_DB)
+LOG_DIR = str(PROJECT_ROOT / "4_Logs")
+LAST_PROMPT_FILE = str(PROJECT_ROOT / "7_Infos" / "PERMANENT_MEMORY.md")
 
 # =========================
 # HELPER FUNCTIONS
@@ -51,13 +36,21 @@ def check_chroma():
     """
     Vérifie l'état de Chroma Vector Store
     """
-    if not CHROMA_AVAILABLE:
-        return {
-            "status": "error",
-            "error": f"Chroma client unavailable: {CHROMA_ERROR}"
-        }
-
     try:
+        if not os.path.exists(CHROMA_DIR):
+            return {
+                "status": "error",
+                "error": f"Chroma directory not found: {CHROMA_DIR}"
+            }
+
+        try:
+            chroma_client = chromadb.PersistentClient(path=CHROMA_DIR)
+        except Exception:
+            chroma_client = chromadb.Client(Settings(
+                persist_directory=CHROMA_DIR,
+                anonymized_telemetry=False
+            ))
+
         # Liste des collections
         collections = chroma_client.list_collections()
         collection_names = [col.name for col in collections]
@@ -253,6 +246,12 @@ async def full_monitor():
     }
     return JSONResponse(content=response)
 
+@router.get("/status")
+async def status_monitor():
+    """
+    Endpoint status check simple
+    """
+    return JSONResponse({"status": "ok", "endpoint": "monitor"})
 
 @router.get("/health")
 async def health_monitor():
