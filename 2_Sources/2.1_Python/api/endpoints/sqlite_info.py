@@ -89,6 +89,7 @@ async def list_tables() -> JSONResponse:
                 }
                 for col in cursor.fetchall()
             ]
+            payload.append({"name": table, "columns": columns})
             payload.append({
                 "name": table,
                 "columns": columns,
@@ -159,7 +160,6 @@ async def list_documents(limit: int = 200) -> JSONResponse:
         "row_count": result.row_count,
         "limit": limit,
     })
-
 
 @router.get("/uploads")
 async def list_uploads() -> JSONResponse:

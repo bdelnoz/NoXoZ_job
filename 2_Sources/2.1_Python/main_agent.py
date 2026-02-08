@@ -541,6 +541,7 @@ async def sqlite_info():
                             const title = document.createElement("h3");
                             const countInfo = table.row_count === null ? "n/a" : table.row_count;
                             title.textContent = `${table.name} (lignes: ${countInfo})`;
+                            title.textContent = table.name;
                             card.appendChild(title);
 
                             const colLines = table.columns.map(col => {
@@ -562,6 +563,9 @@ async def sqlite_info():
                     }
                 }
 
+                async function loadUploads() {
+                    try {
+                        const response = await fetch(`${API_BASE}/api/sqlite_info/uploads`);
                 async function loadFilesTable() {
                     try {
                         const response = await fetch(`${API_BASE}/api/sqlite_info/files?limit=200`);
@@ -657,6 +661,7 @@ async def sqlite_info():
                     runQuery();
                 });
                 document.getElementById("refreshUploads").addEventListener("click", loadUploads);
+                loadTables();
                 document.getElementById("refreshFilesTable").addEventListener("click", loadFilesTable);
                 document.getElementById("refreshDocsTable").addEventListener("click", loadDocumentsTable);
 
