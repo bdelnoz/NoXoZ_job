@@ -1,17 +1,20 @@
-# TODO – Audit NoXoZ_job
+# FILENAME: todo_audit.md
+# COMPLETE PATH: audit/todo_audit.md
+# Auteur: Bruno DELNOZ
+# Email: bruno.delnoz@protonmail.com
+# Version: v1.0
+# Date: 2026-02-08 00:10:31
 
-## Court terme
-- [ ] Aligner la base SQLite (`metadata.db` vs `noxoz_metadata.db`).
-- [ ] Supprimer/archiver `status.ORI.py` et `fastapi_full_monitor.py` si non utilisés.
-- [ ] Nettoyer `temp.py` et `check_all_web_python.sh`.
-- [ ] Ajouter les PID/logs manquants dans `.gitignore`.
-- [ ] Uniformiser les chemins via `.env` (remplacer les chemins hardcodés).
+## P0
+- [ ] Normaliser les chemins via variables d’environnement (CHROMA_DIR, SQLITE_DB, BASE_DIR). Dépendances: aucune. Validation: app démarre avec chemins custom.
+- [ ] Résoudre la collision /api/monitor/health. Dépendances: aucune. Validation: routes uniques dans /docs.
 
-## Moyen terme
-- [ ] Normaliser les embeddings (local uniquement) et retirer `OpenAIEmbeddingFunction`.
-- [ ] Isoler les tests (logs, ports dédiés).
-- [ ] Ajouter un vrai framework de tests (pytest) + mocks Ollama/Chroma.
+## P1
+- [ ] Documenter précisément l’installation (Ollama, modèles, Chroma). Dépendances: P0 chemins. Validation: un nouveau dev peut installer sans erreur.
+- [ ] Remplacer les certificats TLS versionnés par génération locale. Dépendances: P0 chemins. Validation: certs générés via script.
+- [ ] Nettoyer fichiers legacy (status.ORI.py, fastapi_full_monitor.py si non utilisé). Dépendances: P0 routes. Validation: aucun import orphelin.
 
-## Long terme
-- [ ] Ajouter une UI frontend dédiée (actuellement uniquement HTML minimal dans `status_web.py`).
-- [ ] Mettre en place CI (lint + tests) avec GitHub Actions.
+## P2
+- [ ] Ajouter tests automatisés (pytest) pour endpoints /generate, /upload, /status. Dépendances: P0. Validation: tests passent en CI.
+- [ ] Ajouter validation d’upload (taille, type). Dépendances: P0. Validation: erreurs gérées pour formats non supportés.
+- [ ] Ajouter journalisation structurée. Dépendances: P1 docs. Validation: logs JSON ou format standardisé.

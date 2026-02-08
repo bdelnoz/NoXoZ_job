@@ -1,0 +1,14 @@
+Domain,Component,SubComponent,Path,Role,Dependencies,Status
+backend,API,FastAPI app,2_Sources/2.1_Python/main_agent.py,ASGI application,fastapi;uvicorn,active
+backend,API,Router,2_Sources/2.1_Python/api/router.py,Route registration,fastapi,active
+backend,API,Generate endpoint,2_Sources/2.1_Python/api/endpoints/generate.py,Document generation API,fastapi,active
+backend,API,Upload endpoint,2_Sources/2.1_Python/api/endpoints/upload.py,File upload API,fastapi,active
+backend,API,Status endpoint,2_Sources/2.1_Python/api/endpoints/status.py,SQLite status API,sqlite3,active
+backend,API,Monitor endpoint,2_Sources/2.1_Python/api/monitor.py,Full monitoring,chromadb;sqlite3;subprocess,active
+backend,Services,Vector store,2_Sources/2.1_Python/services/vector_store.py,Chroma + SQLite storage,chromadb;langchain_community;pypdf;python-docx,active
+backend,Services,Ingestion,2_Sources/2.1_Python/services/ingestion.py,Save + ingest uploads,fastapi;vector_store,active
+backend,Services,Generation,2_Sources/2.1_Python/services/generation.py,Generate DOCX via Ollama,ollama;python-docx,active
+infra,Scripts,FastAPI service,8_Scripts/8.1_Init/service.fastapi/start_fastapi.sh,Start/stop FastAPI,uvicorn;systemd,active
+infra,Scripts,Ollama service,8_Scripts/8.1_Init/service.ollama/start_ollama.sh,Start/stop Ollama,ollama;systemd,active
+data,Storage,Outputs,5_Outputs,Generated documents storage,filesystem,active
+data,Storage,Logs,4_Logs,Runtime logs,filesystem,active
