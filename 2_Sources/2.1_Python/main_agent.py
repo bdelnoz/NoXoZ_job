@@ -111,9 +111,6 @@ async def manual_operation():
                     status.textContent = `Statut : prérempli (mode=${operationModeParam || "n/a"}, fichier=${fileNameParam || "n/a"}).`;
                 }
 
-                const basePath = window.location.pathname.replace(/\\/manual_operation.*$/, "");
-                const apiBase = `${window.location.origin}${basePath}/api`;
-
                 async function handleUploadResponse(response) {
                     let result = null;
                     try {
@@ -163,7 +160,7 @@ async def manual_operation():
                     details.textContent = `Détails : source serveur=${relativePath}`;
                     stepList.innerHTML = "<div>En attente des étapes...</div>";
                     try {
-                        const response = await fetch(`${apiBase}/upload/server-file`, {
+                        const response = await fetch("/api/upload/server-file", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json"
@@ -186,6 +183,30 @@ async def manual_operation():
                     }
                 }
 
+                const params = new URLSearchParams(window.location.search);
+                const fileTypeParam = params.get("fileType");
+                const operationModeParam = params.get("operationMode");
+                const fileNameParam = params.get("file");
+                const promptParam = params.get("prompt");
+
+                if (fileTypeParam) {
+                    const fileTypeSelect = document.getElementById("fileType");
+                    fileTypeSelect.value = fileTypeParam;
+                }
+
+                if (operationModeParam) {
+                    const operationModeSelect = document.getElementById("operationMode");
+                    operationModeSelect.value = operationModeParam;
+                }
+
+                if (promptParam) {
+                    details.textContent = `Détails : prompt=${promptParam}`;
+                }
+
+                if (operationModeParam || fileNameParam) {
+                    status.textContent = `Statut : prérempli (mode=${operationModeParam || "n/a"}, fichier=${fileNameParam || "n/a"}).`;
+                }
+
                 form.addEventListener("submit", async (event) => {
                     event.preventDefault();
                     const fileInput = document.getElementById("fileInput");
@@ -205,7 +226,7 @@ async def manual_operation():
 
                     status.textContent = "Statut : upload en cours...";
                     try {
-                        const response = await fetch(`${apiBase}/upload/`, {
+                        const response = await fetch("/api/upload/", {
                             method: "POST",
                             body: data
                         });

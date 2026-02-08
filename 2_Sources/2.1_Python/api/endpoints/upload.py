@@ -56,7 +56,6 @@ async def upload_file(file: UploadFile = File(...)):
         }, status_code=500)
 
 @router.post("/server-file")
-@router.post("/server-file/")
 async def upload_server_file(payload: ServerFileRequest):
     log_entry = {
         "id": len(UPLOAD_LOGS) + 1,
