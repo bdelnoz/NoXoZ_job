@@ -169,9 +169,12 @@ def get_recent_logs():
     """
     try:
         if not os.path.exists(LOG_DIR):
+            os.makedirs(LOG_DIR, exist_ok=True)
             return {
-                "status": "warning",
-                "message": f"Log directory not found: {LOG_DIR}"
+                "status": "ok",
+                "logs": {},
+                "total_log_files": 0,
+                "message": f"Log directory created: {LOG_DIR}"
             }
 
         logs = {}
@@ -187,10 +190,11 @@ def get_recent_logs():
             except Exception as e:
                 logs[log_file.name] = [f"Error reading: {str(e)}"]
 
+        total_log_files = len(list(Path(LOG_DIR).glob("*.log")))
         return {
             "status": "ok",
             "logs": logs,
-            "total_log_files": len(list(Path(LOG_DIR).glob("*.log")))
+            "total_log_files": total_log_files
         }
     except Exception as e:
         return {
@@ -205,9 +209,13 @@ def get_last_prompt():
     """
     try:
         if not os.path.exists(LAST_PROMPT_FILE):
+            os.makedirs(Path(LAST_PROMPT_FILE).parent, exist_ok=True)
+            Path(LAST_PROMPT_FILE).touch()
             return {
-                "status": "warning",
-                "message": f"Memory file not found: {LAST_PROMPT_FILE}"
+                "status": "ok",
+                "last_lines": [],
+                "total_lines": 0,
+                "message": f"Memory file created: {LAST_PROMPT_FILE}"
             }
 
         with open(LAST_PROMPT_FILE, "r", encoding="utf-8") as f:

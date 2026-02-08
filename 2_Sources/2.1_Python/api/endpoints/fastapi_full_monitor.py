@@ -71,6 +71,9 @@ def check_ollama():
 
 def get_recent_logs():
     try:
+        if not os.path.exists(LOG_DIR):
+            os.makedirs(LOG_DIR, exist_ok=True)
+            return {"status": "ok", "logs": {}, "message": f"Log directory created: {LOG_DIR}"}
         logs = {}
         for f in os.listdir(LOG_DIR):
             if f.endswith(".log"):
@@ -83,12 +86,14 @@ def get_recent_logs():
 
 def get_last_prompt():
     try:
-        if os.path.exists(LAST_PROMPT_FILE):
-            with open(LAST_PROMPT_FILE, "r") as f:
-                lines = f.readlines()
-                return {"status": "ok", "last_lines": lines[-10:]}  # Dernières 10 lignes
-        else:
-            return {"status": "empty", "last_lines": []}
+        if not os.path.exists(LAST_PROMPT_FILE):
+            os.makedirs(os.path.dirname(LAST_PROMPT_FILE), exist_ok=True)
+            with open(LAST_PROMPT_FILE, "w", encoding="utf-8") as f:
+                f.write("")
+            return {"status": "ok", "last_lines": [], "message": f"Memory file created: {LAST_PROMPT_FILE}"}
+        with open(LAST_PROMPT_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            return {"status": "ok", "last_lines": lines[-10:]}  # Dernières 10 lignes
     except Exception as e:
         return {"status": "error", "error": str(e)}
 
