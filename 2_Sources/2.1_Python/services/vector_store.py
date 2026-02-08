@@ -256,6 +256,7 @@ def init_sqlite() -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
     if _sqlite_table_exists(cursor, "files"):
         # Ajoute les colonnes manquantes (sinon: "no such column: updated_at", etc.)
         _sqlite_add_column(cursor, "files", "original_name", "original_name TEXT")
+        _sqlite_add_column(cursor, "files", "original_filename", "original_filename TEXT")
         _sqlite_add_column(cursor, "files", "stored_path", "stored_path TEXT")
         _sqlite_add_column(cursor, "files", "ext", "ext TEXT")
         _sqlite_add_column(cursor, "files", "size_bytes", "size_bytes INTEGER")
@@ -275,6 +276,11 @@ def init_sqlite() -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
             cursor.execute("UPDATE files SET created_at = COALESCE(created_at, ?) WHERE created_at IS NULL OR created_at = '';", (now,))
         if "updated_at" in cols:
             cursor.execute("UPDATE files SET updated_at = COALESCE(updated_at, ?) WHERE updated_at IS NULL OR updated_at = '';", (now,))
+        if "original_filename" in cols:
+            cursor.execute(
+                "UPDATE files SET original_filename = COALESCE(original_filename, original_name) "
+                "WHERE original_filename IS NULL OR original_filename = '';"
+            )
 
     # --------------------------------------------------------------------------
     # MIGRATIONS: DOCUMENTS (si table existante ancienne / incomplète)
@@ -345,23 +351,38 @@ def upsert_file_record(
     - bump_version=True => version = version+1 si déjà présent
     """
     now = datetime.now(timezone.utc).isoformat()
+    cols = _sqlite_table_columns(cursor, "files")
+    has_original_filename = "original_filename" in cols
 
     cursor.execute("SELECT version FROM files WHERE file_id = ?;", (file_id,))
     row = cursor.fetchone()
 
     if row is None:
-        cursor.execute("""
-            INSERT INTO files (file_id, original_name, stored_path, ext, size_bytes, sha256, created_at, updated_at, version, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (file_id, original_name, stored_path, ext, size_bytes, sha256, now, now, 1, status))
+        if has_original_filename:
+            cursor.execute("""
+                INSERT INTO files (file_id, original_name, original_filename, stored_path, ext, size_bytes, sha256, created_at, updated_at, version, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (file_id, original_name, original_name, stored_path, ext, size_bytes, sha256, now, now, 1, status))
+        else:
+            cursor.execute("""
+                INSERT INTO files (file_id, original_name, stored_path, ext, size_bytes, sha256, created_at, updated_at, version, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (file_id, original_name, stored_path, ext, size_bytes, sha256, now, now, 1, status))
     else:
         current_version = int(row[0]) if row[0] is not None else 1
         new_version = (current_version + 1) if bump_version else current_version
-        cursor.execute("""
-            UPDATE files
-            SET original_name = ?, stored_path = ?, ext = ?, size_bytes = ?, sha256 = ?, updated_at = ?, version = ?, status = ?
-            WHERE file_id = ?
-        """, (original_name, stored_path, ext, size_bytes, sha256, now, new_version, status, file_id))
+        if has_original_filename:
+            cursor.execute("""
+                UPDATE files
+                SET original_name = ?, original_filename = ?, stored_path = ?, ext = ?, size_bytes = ?, sha256 = ?, updated_at = ?, version = ?, status = ?
+                WHERE file_id = ?
+            """, (original_name, original_name, stored_path, ext, size_bytes, sha256, now, new_version, status, file_id))
+        else:
+            cursor.execute("""
+                UPDATE files
+                SET original_name = ?, stored_path = ?, ext = ?, size_bytes = ?, sha256 = ?, updated_at = ?, version = ?, status = ?
+                WHERE file_id = ?
+            """, (original_name, stored_path, ext, size_bytes, sha256, now, new_version, status, file_id))
 
 
 def delete_file_records(cursor: sqlite3.Cursor, file_id: str):
