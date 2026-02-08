@@ -35,7 +35,7 @@ Date: 2026-02-08 00:24:49
 ## README / LICENSE / Tests / CI
 - README: present (`README.md`).
 - LICENSE: not found.
-- Tests: present (`2_Sources/2.1_Python/test_db_huffing.py`, `2_Sources/2.1_Python/test_sentence_transfomers.py`).
+- Tests: present (`2_Sources/2.1_Python/test_db_huffing.py`, `2_Sources/2.1_Python/test_sentence_transformers.py`).
 - CI: no workflow files found in the repository (no `.github/workflows/`).
 
 ## Sensitive or security-relevant files (paths only)

@@ -35,7 +35,7 @@
 ./2_Sources/2.1_Python
 ./2_Sources/2.1_Python/__pycache__
 ./2_Sources/2.1_Python/__pycache__/test_db_huffing.cpython-310-pytest-9.0.2.pyc
-./2_Sources/2.1_Python/__pycache__/test_sentence_transfomers.cpython-310-pytest-9.0.2.pyc
+./2_Sources/2.1_Python/__pycache__/test_sentence_transformers.cpython-310-pytest-9.0.2.pyc
 ./2_Sources/2.1_Python/api
 ./2_Sources/2.1_Python/api/__init__.py
 ./2_Sources/2.1_Python/api/dependencies.py
@@ -56,7 +56,7 @@
 ./2_Sources/2.1_Python/services/vector_store.py
 ./2_Sources/2.1_Python/temp.py
 ./2_Sources/2.1_Python/test_db_huffing.py
-./2_Sources/2.1_Python/test_sentence_transfomers.py
+./2_Sources/2.1_Python/test_sentence_transformers.py
 ./2_Sources/2.2_Bash
 ./2_Sources/2.2_Bash/create_structure.sh
 ./2_Sources/out.txt
