@@ -8,7 +8,12 @@ app = FastAPI(title="NoXoZ_job API", version="1.0")
 # Middleware CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://127.0.0.1:8443"],  # HTTPS correct
+    allow_origins=[
+        "https://127.0.0.1:8443",
+        "https://localhost:8443",
+        "http://127.0.0.1:8443",
+        "http://localhost:8443",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -80,6 +85,30 @@ async def manual_operation():
                 const details = document.getElementById("details");
                 const stepList = document.getElementById("stepList");
 
+                const params = new URLSearchParams(window.location.search);
+                const fileTypeParam = params.get("fileType");
+                const operationModeParam = params.get("operationMode");
+                const fileNameParam = params.get("file");
+                const promptParam = params.get("prompt");
+
+                if (fileTypeParam) {
+                    const fileTypeSelect = document.getElementById("fileType");
+                    fileTypeSelect.value = fileTypeParam;
+                }
+
+                if (operationModeParam) {
+                    const operationModeSelect = document.getElementById("operationMode");
+                    operationModeSelect.value = operationModeParam;
+                }
+
+                if (promptParam) {
+                    details.textContent = `Détails : prompt=${promptParam}`;
+                }
+
+                if (operationModeParam || fileNameParam) {
+                    status.textContent = `Statut : prérempli (mode=${operationModeParam || "n/a"}, fichier=${fileNameParam || "n/a"}).`;
+                }
+
                 form.addEventListener("submit", async (event) => {
                     event.preventDefault();
                     const fileInput = document.getElementById("fileInput");
@@ -99,7 +128,7 @@ async def manual_operation():
 
                     status.textContent = "Statut : upload en cours...";
                     try {
-                        const response = await fetch("/api/upload", {
+                        const response = await fetch("/api/upload/", {
                             method: "POST",
                             body: data
                         });
