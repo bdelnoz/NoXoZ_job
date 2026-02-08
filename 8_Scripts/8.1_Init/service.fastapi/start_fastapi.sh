@@ -32,6 +32,7 @@ PID_FILE="$RUN_DIR/fastapi.pid"
 SYSTEMD_PID_FILE="$RUN_DIR/service.noxoz_job.fastapi.pid"
 LOG_FILE="$LOG_DIR/log.start_fastapi.$TIMESTAMP.log"
 
+
 ### UTILS ###
 
 # Capture PID réel depuis ss -tlpn
@@ -84,6 +85,7 @@ start() {
   else
     exec_cmd="uvicorn"
   fi
+
   nohup $exec_cmd "$APP_MODULE" \
     --host "$HOST" \
     --port "$PORT" \
