@@ -22,7 +22,7 @@ router = APIRouter()
 # =========================
 # CONFIGURATION PATHS
 # =========================
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 CHROMA_DIR = str(VECTORS_DIR)
 SQLITE_DB = str(METADATA_DB)
 LOG_DIR = str(PROJECT_ROOT / "4_Logs")
