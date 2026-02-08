@@ -11,7 +11,6 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 import chromadb
 from chromadb.config import Settings
-from chromadb.utils import embedding_functions
 import sqlite3
 import os
 import subprocess
@@ -28,6 +27,7 @@ CHROMA_DIR = str(VECTORS_DIR)
 SQLITE_DB = str(METADATA_DB)
 LOG_DIR = str(PROJECT_ROOT / "4_Logs")
 LAST_PROMPT_FILE = str(PROJECT_ROOT / "7_Infos" / "PERMANENT_MEMORY.md")
+<<<<<<< ours
 
 # =========================
 # INITIALISATION CHROMA CLIENT
@@ -44,6 +44,8 @@ try:
 except Exception as e:
     CHROMA_AVAILABLE = False
     CHROMA_ERROR = str(e)
+=======
+>>>>>>> theirs
 
 # =========================
 # HELPER FUNCTIONS
@@ -53,13 +55,21 @@ def check_chroma():
     """
     Vérifie l'état de Chroma Vector Store
     """
-    if not CHROMA_AVAILABLE:
-        return {
-            "status": "error",
-            "error": f"Chroma client unavailable: {CHROMA_ERROR}"
-        }
-
     try:
+        if not os.path.exists(CHROMA_DIR):
+            return {
+                "status": "error",
+                "error": f"Chroma directory not found: {CHROMA_DIR}"
+            }
+
+        try:
+            chroma_client = chromadb.PersistentClient(path=CHROMA_DIR)
+        except Exception:
+            chroma_client = chromadb.Client(Settings(
+                persist_directory=CHROMA_DIR,
+                anonymized_telemetry=False
+            ))
+
         # Liste des collections
         collections = chroma_client.list_collections()
         collection_names = [col.name for col in collections]
