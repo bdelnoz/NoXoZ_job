@@ -272,7 +272,7 @@ PYTHON_FILES = [
     "services/vector_store.py",
     "temp.py",
     "test_db_huffing.py",
-    "test_sentence_transfomers.py"
+    "test_sentence_transformers.py"
 ]
 
 # Endpoints health à tester
@@ -809,7 +809,7 @@ async def parse_and_store_file(file: UploadFile):
     return f"Fichier {file.filename} ingéré avec succès"
 
 ######################################################################
-# FULLPATH /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/2_Sources/2.1_Python/test_sentence_transfomers.py
+# FULLPATH /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/2_Sources/2.1_Python/test_sentence_transformers.py
 ######################################################################
 from sentence_transformers import SentenceTransformer
 
