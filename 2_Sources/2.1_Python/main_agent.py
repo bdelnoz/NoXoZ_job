@@ -445,7 +445,6 @@ async def sqlite_info():
                     </div>
                     <div id="documentsTable">Chargement...</div>
                 </div>
-
                 <div class="card">
                     <h2>Fichiers uploadés (dossier)</h2>
                     <div class="controls">
@@ -599,6 +598,7 @@ async def sqlite_info():
                             const errorData = await response.json();
                             throw new Error(errorData.detail || "Erreur de chargement.");
                         }
+
                         const data = await response.json();
                         if (!data.files || !data.files.length) {
                             uploadsEl.textContent = "Aucun fichier uploadé.";
@@ -669,7 +669,5 @@ async def sqlite_info():
         </html>
         """
     )
-
-
 # Inclure le router principal avec préfixe /api
 app.include_router(api_router, prefix="/api")

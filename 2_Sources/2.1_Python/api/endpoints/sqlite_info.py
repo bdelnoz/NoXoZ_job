@@ -13,7 +13,6 @@ from services.vector_store import METADATA_DB, UPLOADS_DIR, ensure_sqlite_schema
 
 router = APIRouter()
 
-
 class QueryRequest(BaseModel):
     query: str = Field(..., min_length=1, description="SQL query (SELECT/PRAGMA only)")
     limit: int = Field(200, ge=1, le=1000)
@@ -41,7 +40,6 @@ def _sanitize_query(raw_query: str) -> str:
 
     return trimmed
 
-
 def _run_query(query: str, limit: int) -> SqliteQueryResult:
     ensure_sqlite_schema()
     conn = sqlite3.connect(METADATA_DB)
@@ -54,14 +52,12 @@ def _run_query(query: str, limit: int) -> SqliteQueryResult:
     finally:
         conn.close()
 
-
 def _safe_table_count(cursor: sqlite3.Cursor, table: str) -> int | None:
     try:
         cursor.execute(f"SELECT COUNT(*) FROM {table};")
         return int(cursor.fetchone()[0])
     except sqlite3.Error:
         return None
-
 
 @router.get("/tables")
 async def list_tables() -> JSONResponse:
@@ -116,8 +112,6 @@ async def execute_query(payload: QueryRequest) -> JSONResponse:
 def _fetch_table_rows(table: str, limit: int) -> SqliteQueryResult:
     query = f"SELECT * FROM {table} ORDER BY rowid DESC"
     return _run_query(query, limit)
-
-
 @router.get("/files")
 async def list_files(limit: int = 200) -> JSONResponse:
     ensure_sqlite_schema()
@@ -135,8 +129,6 @@ async def list_files(limit: int = 200) -> JSONResponse:
         "row_count": result.row_count,
         "limit": limit,
     })
-
-
 @router.get("/documents")
 async def list_documents(limit: int = 200) -> JSONResponse:
     ensure_sqlite_schema()
@@ -154,8 +146,6 @@ async def list_documents(limit: int = 200) -> JSONResponse:
         "row_count": result.row_count,
         "limit": limit,
     })
-
-
 @router.get("/uploads")
 async def list_uploads() -> JSONResponse:
     items: list[dict[str, Any]] = []
