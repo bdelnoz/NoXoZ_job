@@ -213,7 +213,10 @@ def init_sqlite() -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
     Initialise SQLite et applique des migrations AUTOMATIQUES si l'ancienne base
     existe avec un schéma incomplet (ex: pas de colonne updated_at).
     """
-    conn = sqlite3.connect(METADATA_DB)
+    conn = sqlite3.connect(METADATA_DB, timeout=30)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA busy_timeout = 30000;")
+    conn.execute("PRAGMA foreign_keys = ON;")
     cursor = conn.cursor()
 
     # --------------------------------------------------------------------------
