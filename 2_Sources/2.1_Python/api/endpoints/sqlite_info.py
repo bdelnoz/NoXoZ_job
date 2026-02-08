@@ -44,7 +44,7 @@ def _sanitize_query(raw_query: str) -> str:
 
 def _run_query(query: str, limit: int) -> SqliteQueryResult:
     ensure_sqlite_schema()
-    conn = sqlite3.connect(METADATA_DB)
+    conn = _connect_db()
     try:
         cursor = conn.cursor()
         cursor.execute(query)
@@ -54,6 +54,7 @@ def _run_query(query: str, limit: int) -> SqliteQueryResult:
     finally:
         conn.close()
 
+
 def _safe_table_count(cursor: sqlite3.Cursor, table: str) -> int | None:
     try:
         cursor.execute(f"SELECT COUNT(*) FROM {table};")
@@ -62,10 +63,15 @@ def _safe_table_count(cursor: sqlite3.Cursor, table: str) -> int | None:
         return None
 
 
+def _connect_db() -> sqlite3.Connection:
+    conn = sqlite3.connect(METADATA_DB, timeout=5)
+    return conn
+
+
 @router.get("/tables")
 async def list_tables() -> JSONResponse:
     ensure_sqlite_schema()
-    conn = sqlite3.connect(METADATA_DB)
+    conn = _connect_db()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
@@ -83,15 +89,12 @@ async def list_tables() -> JSONResponse:
                 }
                 for col in cursor.fetchall()
             ]
-<<<<<<< ours
             payload.append({"name": table, "columns": columns})
-=======
             payload.append({
                 "name": table,
                 "columns": columns,
                 "row_count": _safe_table_count(cursor, table),
             })
->>>>>>> theirs
 
         return JSONResponse({
             "status": "ok",
@@ -116,8 +119,6 @@ async def execute_query(payload: QueryRequest) -> JSONResponse:
     })
 
 
-<<<<<<< ours
-=======
 def _fetch_table_rows(table: str, limit: int) -> SqliteQueryResult:
     query = f"SELECT * FROM {table} ORDER BY rowid DESC"
     return _run_query(query, limit)
@@ -160,8 +161,6 @@ async def list_documents(limit: int = 200) -> JSONResponse:
         "limit": limit,
     })
 
-
->>>>>>> theirs
 @router.get("/uploads")
 async def list_uploads() -> JSONResponse:
     items: list[dict[str, Any]] = []
