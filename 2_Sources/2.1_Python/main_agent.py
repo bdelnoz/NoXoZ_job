@@ -96,6 +96,8 @@ async def manual_operation():
 
                     status.textContent = "Statut : upload en cours...";
                     stepList.innerHTML = "<div>En attente des étapes...</div>";
+
+                    status.textContent = "Statut : upload en cours...";
                     try {
                         const response = await fetch("/api/upload", {
                             method: "POST",
@@ -146,6 +148,10 @@ async def manual_operation():
                         status.textContent = "Statut : erreur réseau.";
                         details.textContent = `Détails : ${err}`;
                         stepList.innerHTML = "<div style='color:#ff6b6b;'>Échec: erreur réseau.</div>";
+                        const result = await response.json();
+                        status.textContent = `Statut : ${result.status} - ${result.filename || ""}`;
+                    } catch (err) {
+                        status.textContent = `Statut : erreur - ${err}`;
                     }
                 });
             </script>
