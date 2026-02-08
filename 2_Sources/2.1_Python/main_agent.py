@@ -431,6 +431,25 @@ async def sqlite_info():
                 </div>
 
                 <div class="card">
+<<<<<<< ours
+=======
+                    <h2>Fichiers (table files)</h2>
+                    <div class="controls">
+                        <button class="secondary" id="refreshFilesTable">Rafraîchir</button>
+                    </div>
+                    <div id="filesTable">Chargement...</div>
+                </div>
+
+                <div class="card">
+                    <h2>Documents (table documents)</h2>
+                    <div class="controls">
+                        <button class="secondary" id="refreshDocsTable">Rafraîchir</button>
+                    </div>
+                    <div id="documentsTable">Chargement...</div>
+                </div>
+
+                <div class="card">
+>>>>>>> theirs
                     <h2>Fichiers uploadés (dossier)</h2>
                     <div class="controls">
                         <button class="secondary" id="refreshUploads">Rafraîchir</button>
@@ -460,6 +479,11 @@ async def sqlite_info():
                 const API_BASE = window.location.origin;
                 const tablesEl = document.getElementById("tables");
                 const uploadsEl = document.getElementById("uploads");
+<<<<<<< ours
+=======
+                const filesTableEl = document.getElementById("filesTable");
+                const documentsTableEl = document.getElementById("documentsTable");
+>>>>>>> theirs
                 const dbPathEl = document.getElementById("dbPath");
                 const queryInput = document.getElementById("queryInput");
                 const limitInput = document.getElementById("limitInput");
@@ -504,6 +528,13 @@ async def sqlite_info():
                 async function loadTables() {
                     try {
                         const response = await fetch(`${API_BASE}/api/sqlite_info/tables`);
+<<<<<<< ours
+=======
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || "Erreur de chargement.");
+                        }
+>>>>>>> theirs
                         const data = await response.json();
                         dbPathEl.textContent = `DB: ${data.db_path || "-"}`;
 
@@ -517,7 +548,12 @@ async def sqlite_info():
                         data.tables.forEach(table => {
                             const card = document.createElement("div");
                             const title = document.createElement("h3");
+<<<<<<< ours
                             title.textContent = table.name;
+=======
+                            const countInfo = table.row_count === null ? "n/a" : table.row_count;
+                            title.textContent = `${table.name} (lignes: ${countInfo})`;
+>>>>>>> theirs
                             card.appendChild(title);
 
                             const colLines = table.columns.map(col => {
@@ -539,9 +575,49 @@ async def sqlite_info():
                     }
                 }
 
+<<<<<<< ours
                 async function loadUploads() {
                     try {
                         const response = await fetch(`${API_BASE}/api/sqlite_info/uploads`);
+=======
+                async function loadFilesTable() {
+                    try {
+                        const response = await fetch(`${API_BASE}/api/sqlite_info/files?limit=200`);
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || "Erreur de chargement.");
+                        }
+                        const data = await response.json();
+                        filesTableEl.innerHTML = "";
+                        filesTableEl.appendChild(buildTable(data.columns || [], data.rows || []));
+                    } catch (err) {
+                        filesTableEl.textContent = `Erreur: ${err}`;
+                    }
+                }
+
+                async function loadDocumentsTable() {
+                    try {
+                        const response = await fetch(`${API_BASE}/api/sqlite_info/documents?limit=200`);
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || "Erreur de chargement.");
+                        }
+                        const data = await response.json();
+                        documentsTableEl.innerHTML = "";
+                        documentsTableEl.appendChild(buildTable(data.columns || [], data.rows || []));
+                    } catch (err) {
+                        documentsTableEl.textContent = `Erreur: ${err}`;
+                    }
+                }
+
+                async function loadUploads() {
+                    try {
+                        const response = await fetch(`${API_BASE}/api/sqlite_info/uploads`);
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || "Erreur de chargement.");
+                        }
+>>>>>>> theirs
                         const data = await response.json();
                         if (!data.files || !data.files.length) {
                             uploadsEl.textContent = "Aucun fichier uploadé.";
@@ -600,8 +676,17 @@ async def sqlite_info():
                     runQuery();
                 });
                 document.getElementById("refreshUploads").addEventListener("click", loadUploads);
+<<<<<<< ours
 
                 loadTables();
+=======
+                document.getElementById("refreshFilesTable").addEventListener("click", loadFilesTable);
+                document.getElementById("refreshDocsTable").addEventListener("click", loadDocumentsTable);
+
+                loadTables();
+                loadFilesTable();
+                loadDocumentsTable();
+>>>>>>> theirs
                 loadUploads();
             </script>
         </body>

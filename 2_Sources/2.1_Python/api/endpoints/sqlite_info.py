@@ -55,6 +55,17 @@ def _run_query(query: str, limit: int) -> SqliteQueryResult:
         conn.close()
 
 
+<<<<<<< ours
+=======
+def _safe_table_count(cursor: sqlite3.Cursor, table: str) -> int | None:
+    try:
+        cursor.execute(f"SELECT COUNT(*) FROM {table};")
+        return int(cursor.fetchone()[0])
+    except sqlite3.Error:
+        return None
+
+
+>>>>>>> theirs
 @router.get("/tables")
 async def list_tables() -> JSONResponse:
     ensure_sqlite_schema()
@@ -76,7 +87,15 @@ async def list_tables() -> JSONResponse:
                 }
                 for col in cursor.fetchall()
             ]
+<<<<<<< ours
             payload.append({"name": table, "columns": columns})
+=======
+            payload.append({
+                "name": table,
+                "columns": columns,
+                "row_count": _safe_table_count(cursor, table),
+            })
+>>>>>>> theirs
 
         return JSONResponse({
             "status": "ok",
@@ -101,6 +120,52 @@ async def execute_query(payload: QueryRequest) -> JSONResponse:
     })
 
 
+<<<<<<< ours
+=======
+def _fetch_table_rows(table: str, limit: int) -> SqliteQueryResult:
+    query = f"SELECT * FROM {table} ORDER BY rowid DESC"
+    return _run_query(query, limit)
+
+
+@router.get("/files")
+async def list_files(limit: int = 200) -> JSONResponse:
+    ensure_sqlite_schema()
+    if limit < 1 or limit > 1000:
+        raise HTTPException(status_code=400, detail="Limit doit être entre 1 et 1000.")
+    try:
+        result = _fetch_table_rows("files", limit)
+    except sqlite3.Error as exc:
+        raise HTTPException(status_code=404, detail=f"Table files introuvable: {exc}") from exc
+    return JSONResponse({
+        "status": "ok",
+        "table": "files",
+        "columns": result.columns,
+        "rows": result.rows,
+        "row_count": result.row_count,
+        "limit": limit,
+    })
+
+
+@router.get("/documents")
+async def list_documents(limit: int = 200) -> JSONResponse:
+    ensure_sqlite_schema()
+    if limit < 1 or limit > 1000:
+        raise HTTPException(status_code=400, detail="Limit doit être entre 1 et 1000.")
+    try:
+        result = _fetch_table_rows("documents", limit)
+    except sqlite3.Error as exc:
+        raise HTTPException(status_code=404, detail=f"Table documents introuvable: {exc}") from exc
+    return JSONResponse({
+        "status": "ok",
+        "table": "documents",
+        "columns": result.columns,
+        "rows": result.rows,
+        "row_count": result.row_count,
+        "limit": limit,
+    })
+
+
+>>>>>>> theirs
 @router.get("/uploads")
 async def list_uploads() -> JSONResponse:
     items: list[dict[str, Any]] = []
