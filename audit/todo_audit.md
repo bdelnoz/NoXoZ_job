@@ -1,20 +1,47 @@
-# FILENAME: todo_audit.md
-# COMPLETE PATH: audit/todo_audit.md
-# Auteur: Bruno DELNOZ
-# Email: bruno.delnoz@protonmail.com
-# Version: v1.0
-# Date: 2026-02-08 00:10:31
+FILENAME: todo_audit.md
+COMPLETE PATH: ./audit/todo_audit.md
+Auteur: Bruno DELNOZ
+Email: bruno.delnoz@protonmail.com
+Version: v1.0
+Date: 2026-02-08 00:26:19
+
+---
+
+# TODO Backlog (Audit)
 
 ## P0
-- [ ] Normaliser les chemins via variables d’environnement (CHROMA_DIR, SQLITE_DB, BASE_DIR). Dépendances: aucune. Validation: app démarre avec chemins custom.
-- [ ] Résoudre la collision /api/monitor/health. Dépendances: aucune. Validation: routes uniques dans /docs.
+- **Secret remediation**: remove `certs/key.pem` from version control; rotate any associated certs.
+  - Effort: 0.5 day
+  - Risk: HIGH
+  - Depends on: None
+- **Runnable stack**: add FastAPI service to `docker-compose.yml` or provide a verified run script.
+  - Effort: 1-2 days
+  - Risk: HIGH
+  - Depends on: None
 
 ## P1
-- [ ] Documenter précisément l’installation (Ollama, modèles, Chroma). Dépendances: P0 chemins. Validation: un nouveau dev peut installer sans erreur.
-- [ ] Remplacer les certificats TLS versionnés par génération locale. Dépendances: P0 chemins. Validation: certs générés via script.
-- [ ] Nettoyer fichiers legacy (status.ORI.py, fastapi_full_monitor.py si non utilisé). Dépendances: P0 routes. Validation: aucun import orphelin.
+- **Documentation alignment**: update architecture and structure docs to match actual repository layout.
+  - Effort: 0.5-1 day
+  - Risk: MEDIUM
+  - Depends on: P0 runnable stack
+- **Dependency reproducibility**: decide on `requirements.txt` vs `Pipfile` as source of truth.
+  - Effort: 0.5 day
+  - Risk: MEDIUM
+  - Depends on: None
+- **Testing stabilization**: ensure `chromadb` and `sentence_transformers` are installed for tests.
+  - Effort: 0.5 day
+  - Risk: MEDIUM
+  - Depends on: Dependency reproducibility
 
 ## P2
-- [ ] Ajouter tests automatisés (pytest) pour endpoints /generate, /upload, /status. Dépendances: P0. Validation: tests passent en CI.
-- [ ] Ajouter validation d’upload (taille, type). Dépendances: P0. Validation: erreurs gérées pour formats non supportés.
-- [ ] Ajouter journalisation structurée. Dépendances: P1 docs. Validation: logs JSON ou format standardisé.
+- **Legacy cleanup**: clarify status or remove unused scripts/duplicate endpoints.
+  - Effort: 0.25 day
+  - Risk: LOW
+  - Depends on: None
+- **License**: add a project license file.
+  - Effort: 0.25 day
+  - Risk: LOW
+  - Depends on: None
+
+## Conclusion
+STATUS: SUCCESS

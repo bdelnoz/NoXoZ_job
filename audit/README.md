@@ -1,58 +1,43 @@
-# FILENAME: README.md
-# COMPLETE PATH: audit/README.md
-# Auteur: Bruno DELNOZ
-# Email: bruno.delnoz@protonmail.com
-# Version: v1.0
-# Date: 2026-02-08 00:10:31
+FILENAME: README.md
+COMPLETE PATH: ./audit/README.md
+Auteur: Bruno DELNOZ
+Email: bruno.delnoz@protonmail.com
+Version: v1.0
+Date: 2026-02-08 00:25:08
 
-## Description du projet
-NoXoZ_job est un agent LLM local orienté génération et gestion de documents professionnels (CV, lettres, emails), avec ingestion multi-format et API FastAPI. Objectif: fonctionnement 100% offline avec stockage local (Chroma + SQLite) et génération via Ollama.
+---
 
-## Périmètre fonctionnel
-- Ingestion de documents (PDF/DOCX/MD/TXT/JSON/XML).
-- Recherche vectorielle via ChromaDB.
-- Génération de documents via Ollama CLI.
-- API REST FastAPI (upload, generate, status, monitor).
+# NoXoZ_job — Audit README
 
-## Stack technique complète
-- Backend: Python 3, FastAPI, Uvicorn.
-- Vector store: ChromaDB.
-- Embeddings: sentence-transformers, langchain_community.
-- Stockage: SQLite.
-- Génération: Ollama CLI + python-docx.
-- Scripts: Bash (init, services systemd).
-- Conteneurisation: Docker Compose.
+## Purpose
+NoXoZ_job is a local, offline-focused LLM agent designed to ingest personal documents, perform analysis, and generate professional documents (DOCX/MD/PDF) via a FastAPI backend and local LLM tooling. The repository includes source code, documentation, data directories, logs, templates, and scripts.
 
-## Architecture (résumé)
-- FastAPI expose /api/*.
-- services/* gère ingestion, vector store, génération.
-- Scripts shell démarrent/arrêtent services et init projet.
-Voir ARCHITECTURE.md.
+## Repository layout (actual)
+- `1_Documentation/`: General and technical documentation (Markdown, DOCX, CSV).
+- `2_Sources/`: Python and Bash sources.
+- `3_Data/`: Data directories for vectors and metadata (with symlink-like folders).
+- `4_Logs/`, `5_Outputs/`, `6_Results/`, `7_Infos/`: Runtime outputs, logs, and information files.
+- `8_Scripts/`, `9_Templates/`, `10_Runs/`: Utility scripts, templates, run artifacts.
+- `certs/`: TLS certificate and key files.
 
-## Prérequis système
-- Linux avec systemd (scripts de service).
-- Python 3.x + pip/pipenv.
-- Ollama installé localement.
-- Accès fichiers /mnt/data1_100g et /mnt/data2_78g (actuellement hardcodé).
+## Core runtime components (observed)
+- FastAPI application entrypoint: `2_Sources/2.1_Python/main_agent.py`.
+- API routing: `2_Sources/2.1_Python/api/router.py`.
+- Services: ingestion, vector store (Chroma + SQLite), document generation (Ollama + DOCX).
+- Docker Compose: `docker-compose.yml` (Ollama + Chroma only).
 
-## Installation rapide (TL;DR)
-1. Installer dépendances Python: `pip install -r requirements.txt`.
-2. Installer Ollama et modèles.
-3. Démarrer FastAPI: `bash 8_Scripts/8.1_Init/service.fastapi/start_fastapi.sh start`.
+## External dependencies (high level)
+- FastAPI + Uvicorn
+- ChromaDB
+- LangChain + sentence-transformers
+- Ollama runtime (external service)
 
-## Lancement rapide
-- API: `https://127.0.0.1:8443/api`.
-- Status web: `https://127.0.0.1:8443/api/monitor/web_status`.
+## Notes
+- CI workflows are referenced in documentation but not present in the repository.
+- Documentation contains paths and structure that differ from the current repository layout.
 
-## Liens documentation
-- INSTALL.md
-- USAGE.md
-- TESTING.md
-- DEBUG.md
-- ARCHITECTURE.md
+## License
+- No LICENSE file present in the repository.
 
-## État du projet
-UNKNOWN (aucun indicateur stable/POC explicite dans le repository).
-
-## Licence
-UNKNOWN
+## Conclusion
+STATUS: SUCCESS
