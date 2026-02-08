@@ -14,6 +14,7 @@ import sqlite3
 import os
 import subprocess
 import json
+from pathlib import Path
 
 app = FastAPI()
 
@@ -22,8 +23,9 @@ app = FastAPI()
 # -------------------------------
 CHROMA_DIR = "/mnt/data1_100g/agent_llm_local/vectors"
 SQLITE_DB = "/mnt/data1_100g/agent_llm_local/metadata.db"
-LOG_DIR = "./4_Logs"
-LAST_PROMPT_FILE = "./7_Infos/PERMANENT_MEMORY.md"
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+LOG_DIR = str(PROJECT_ROOT / "4_Logs")
+LAST_PROMPT_FILE = str(PROJECT_ROOT / "7_Infos" / "PERMANENT_MEMORY.md")
 
 # -------------------------------
 # INIT CHROMA
