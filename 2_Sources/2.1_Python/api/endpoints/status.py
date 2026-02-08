@@ -11,6 +11,15 @@ def status():
     try:
         conn = sqlite3.connect(METADATA_DB)
         cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS documents (
+                id TEXT PRIMARY KEY,
+                filename TEXT,
+                source TEXT,
+                ingestion_date TEXT
+            )
+        """)
+        conn.commit()
         cursor.execute("SELECT COUNT(*) FROM documents")
         count = cursor.fetchone()[0]
         conn.close()
