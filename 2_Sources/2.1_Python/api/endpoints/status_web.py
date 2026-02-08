@@ -7,6 +7,7 @@ router = APIRouter()
 
 # Base directory pour tes scripts Python
 BASE_DIR = Path(__file__).resolve().parents[2]  # remonte vers 2.1_Python
+REPO_ROOT = Path(__file__).resolve().parents[4]
 
 # Liste des fichiers Python à surveiller
 PYTHON_FILES = [
@@ -15,6 +16,8 @@ PYTHON_FILES = [
     "api/endpoints/generate.py",
     "api/endpoints/status.py",
     "api/endpoints/upload.py",
+    "api/endpoints/status_web.py",
+    "api/monitor.py",
     "chroma_integration.py",
     "main_agent.py",
     "services/generation.py",
@@ -25,28 +28,72 @@ PYTHON_FILES = [
     "test_sentence_transfomers.py"
 ]
 
-# Endpoints health à tester
-HEALTH_ENDPOINTS = [
-    {"name": "Generate", "url": "https://127.0.0.1:8443/api/generate/health"},
-    {"name": "Upload", "url": "https://127.0.0.1:8443/api/upload/health"},
-    {"name": "Status", "url": "https://127.0.0.1:8443/api/status/health"},
-    {"name": "WEB Status Page THIS PAGE !!!!!!!!!", "url": "https://127.0.0.1:8443/api/monitor/health"}
+BASE_API_URL = "https://127.0.0.1:8443/api"
+ENDPOINT_BASES = [
+    {"name": "Generate", "path": "/generate"},
+    {"name": "Upload", "path": "/upload"},
+    {"name": "Status", "path": "/status"},
+    {"name": "Monitor", "path": "/monitor"},
 ]
 
-@router.get("/web_status", response_class=HTMLResponse)
+MONITOR_COMPONENTS = [
+    {"name": "FastAPI", "key": "fastapi"},
+    {"name": "ChromaDB", "key": "chroma"},
+    {"name": "SQLite", "key": "sqlite"},
+    {"name": "Ollama", "key": "ollama"},
+    {"name": "Logs", "key": "logs"},
+    {"name": "Last Prompt", "key": "last_prompt"},
+]
+
+@router.get("/status_web", response_class=HTMLResponse)
 async def web_status():
-    results = []
+    health_results = []
+    status_results = []
     async with httpx.AsyncClient(verify=False) as client:
-        for ep in HEALTH_ENDPOINTS:
+        for ep in ENDPOINT_BASES:
             try:
-                resp = await client.get(ep["url"], timeout=3)
+                resp = await client.get(f"{BASE_API_URL}{ep['path']}/health", timeout=3)
                 if resp.status_code == 200:
                     status = "✅ OK"
                 else:
                     status = f"❌ {resp.status_code}"
             except Exception as e:
                 status = f"❌ Error: {str(e)}"
-            results.append({"name": ep["name"], "status": status})
+            health_results.append({"name": ep["name"], "status": status})
+
+            try:
+                resp = await client.get(f"{BASE_API_URL}{ep['path']}/status", timeout=3)
+                if resp.status_code == 200:
+                    status = "✅ OK"
+                else:
+                    status = f"❌ {resp.status_code}"
+            except Exception as e:
+                status = f"❌ Error: {str(e)}"
+            status_results.append({"name": ep["name"], "status": status})
+
+    monitor_components = []
+    async with httpx.AsyncClient(verify=False) as client:
+        try:
+            monitor_resp = await client.get(f"{BASE_API_URL}/monitor/full", timeout=5)
+            if monitor_resp.status_code == 200:
+                data = monitor_resp.json()
+                for component in MONITOR_COMPONENTS:
+                    component_data = data.get(component["key"], {})
+                    component_status = component_data.get("status", "unknown")
+                    monitor_components.append({
+                        "name": component["name"],
+                        "status": component_status
+                    })
+            else:
+                monitor_components.append({
+                    "name": "Monitor Full",
+                    "status": f"error {monitor_resp.status_code}"
+                })
+        except Exception as e:
+            monitor_components.append({
+                "name": "Monitor Full",
+                "status": f"error {str(e)}"
+            })
 
     # Vérification des fichiers Python
     files_status = []
@@ -56,6 +103,24 @@ async def web_status():
             "name": f,
             "status": "✅ Found" if file_path.exists() else "❌ Missing"
         })
+
+    shell_scripts = []
+    for file_path in sorted(REPO_ROOT.rglob("*.sh")):
+        relative_path = file_path.relative_to(REPO_ROOT)
+        shell_scripts.append({
+            "name": str(relative_path),
+            "status": "✅ Found"
+        })
+
+    text_files = []
+    text_patterns = (".txt", ".md", ".markdown")
+    for file_path in sorted(REPO_ROOT.rglob("*")):
+        if file_path.suffix.lower() in text_patterns:
+            relative_path = file_path.relative_to(REPO_ROOT)
+            text_files.append({
+                "name": str(relative_path),
+                "status": "✅ Found"
+            })
 
     # Générer HTML
     html = """
@@ -76,12 +141,34 @@ async def web_status():
     <table>
     <tr><th>Endpoint</th><th>Status</th></tr>
     """
-    for r in results:
+    for r in health_results:
+        html += f"<tr><td>{r['name']}</td><td>{r['status']}</td></tr>"
+
+    html += "</table><br><h2 style='text-align:center;'>Status des Endpoints Status</h2><table><tr><th>Endpoint</th><th>Status</th></tr>"
+
+    for r in status_results:
+        html += f"<tr><td>{r['name']}</td><td>{r['status']}</td></tr>"
+
+    html += "</table><br><h2 style='text-align:center;'>Status des Composants</h2><table><tr><th>Composant</th><th>Status</th></tr>"
+
+    for r in monitor_components:
         html += f"<tr><td>{r['name']}</td><td>{r['status']}</td></tr>"
 
     html += "</table><br><h2 style='text-align:center;'>Status des Fichiers Python</h2><table><tr><th>Fichier</th><th>Status</th><th>Voir</th></tr>"
 
     for f in files_status:
+        link = f"/api/monitor/read_file?file_path={f['name']}"
+        html += f"<tr><td>{f['name']}</td><td>{f['status']}</td><td><a href='{link}' target='_blank'>Voir</a></td></tr>"
+
+    html += "</table><br><h2 style='text-align:center;'>Fichiers Shell</h2><table><tr><th>Fichier</th><th>Status</th><th>Voir</th></tr>"
+
+    for f in shell_scripts:
+        link = f"/api/monitor/read_file?file_path={f['name']}"
+        html += f"<tr><td>{f['name']}</td><td>{f['status']}</td><td><a href='{link}' target='_blank'>Voir</a></td></tr>"
+
+    html += "</table><br><h2 style='text-align:center;'>Fichiers Texte/Markdown</h2><table><tr><th>Fichier</th><th>Status</th><th>Voir</th></tr>"
+
+    for f in text_files:
         link = f"/api/monitor/read_file?file_path={f['name']}"
         html += f"<tr><td>{f['name']}</td><td>{f['status']}</td><td><a href='{link}' target='_blank'>Voir</a></td></tr>"
 
@@ -91,8 +178,9 @@ async def web_status():
 # Endpoint pour lire un fichier Python
 @router.get("/read_file", response_class=HTMLResponse)
 async def read_file(file_path: str):
-    full_path = BASE_DIR / file_path
-    if not full_path.exists() or not full_path.suffix == ".py":
+    full_path = REPO_ROOT / file_path
+    allowed_suffixes = {".py", ".sh", ".txt", ".md", ".markdown"}
+    if not full_path.exists() or full_path.suffix.lower() not in allowed_suffixes:
         raise HTTPException(status_code=404, detail="File not found")
     content = full_path.read_text()
     content = content.replace("<", "&lt;").replace(">", "&gt;")
