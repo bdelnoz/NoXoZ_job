@@ -52,7 +52,7 @@
 │   │   │   └── [3.3K]  vector_store.py
 │   │   ├── [  61]  temp.py
 │   │   ├── [2.4K]  test_db_huffing.py
-│   │   └── [ 236]  test_sentence_transfomers.py
+│   │   └── [ 236]  test_sentence_transformers.py
 │   ├── [4.0K]  2.2_Bash
 │   │   └── [   0]  create_structure.sh
 │   └── [ 28K]  out.txt

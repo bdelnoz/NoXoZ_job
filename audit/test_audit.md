@@ -14,7 +14,7 @@ Date: 2026-02-08 00:26:04
 
 ## Tests discovered
 - `2_Sources/2.1_Python/test_db_huffing.py`
-- `2_Sources/2.1_Python/test_sentence_transfomers.py`
+- `2_Sources/2.1_Python/test_sentence_transformers.py`
 
 ## Test execution (actual)
 Command executed:

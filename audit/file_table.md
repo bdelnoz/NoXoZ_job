@@ -36,7 +36,7 @@
 | 2_Sources/2.1_Python/services/vector_store.py | Services métier (ingestion/génération/vector store) |
 | 2_Sources/2.1_Python/temp.py | Code Python principal ou scripts de test |
 | 2_Sources/2.1_Python/test_db_huffing.py | Code Python principal ou scripts de test |
-| 2_Sources/2.1_Python/test_sentence_transfomers.py | Code Python principal ou scripts de test |
+| 2_Sources/2.1_Python/test_sentence_transformers.py | Code Python principal ou scripts de test |
 | 2_Sources/2.2_Bash/create_structure.sh | Script Bash (structure projet) |
 | 2_Sources/out.txt | Fichier projet |
 | 4_Logs/init.txt | Emplacement logs (placeholder ou logs) |
