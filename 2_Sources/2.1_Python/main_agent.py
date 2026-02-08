@@ -183,30 +183,6 @@ async def manual_operation():
                     }
                 }
 
-                const params = new URLSearchParams(window.location.search);
-                const fileTypeParam = params.get("fileType");
-                const operationModeParam = params.get("operationMode");
-                const fileNameParam = params.get("file");
-                const promptParam = params.get("prompt");
-
-                if (fileTypeParam) {
-                    const fileTypeSelect = document.getElementById("fileType");
-                    fileTypeSelect.value = fileTypeParam;
-                }
-
-                if (operationModeParam) {
-                    const operationModeSelect = document.getElementById("operationMode");
-                    operationModeSelect.value = operationModeParam;
-                }
-
-                if (promptParam) {
-                    details.textContent = `Détails : prompt=${promptParam}`;
-                }
-
-                if (operationModeParam || fileNameParam) {
-                    status.textContent = `Statut : prérempli (mode=${operationModeParam || "n/a"}, fichier=${fileNameParam || "n/a"}).`;
-                }
-
                 form.addEventListener("submit", async (event) => {
                     event.preventDefault();
                     const fileInput = document.getElementById("fileInput");
@@ -224,7 +200,6 @@ async def manual_operation():
                     status.textContent = "Statut : upload en cours...";
                     stepList.innerHTML = "<div>En attente des étapes...</div>";
 
-                    status.textContent = "Statut : upload en cours...";
                     try {
                         const response = await fetch("/api/upload/", {
                             method: "POST",
