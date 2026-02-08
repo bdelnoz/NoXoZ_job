@@ -16,16 +16,18 @@ import sqlite3
 import os
 import subprocess
 from pathlib import Path
+from services.vector_store import METADATA_DB, VECTORS_DIR
 
 router = APIRouter()
 
 # =========================
 # CONFIGURATION PATHS
 # =========================
-CHROMA_DIR = "/mnt/data1_100g/agent_llm_local/vectors"
-SQLITE_DB = "/mnt/data1_100g/agent_llm_local/sqlite/noxoz_metadata.db"
-LOG_DIR = "./4_Logs"
-LAST_PROMPT_FILE = "./7_Infos/PERMANENT_MEMORY.md"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+CHROMA_DIR = str(VECTORS_DIR)
+SQLITE_DB = str(METADATA_DB)
+LOG_DIR = str(PROJECT_ROOT / "4_Logs")
+LAST_PROMPT_FILE = str(PROJECT_ROOT / "7_Infos" / "PERMANENT_MEMORY.md")
 
 # =========================
 # INITIALISATION CHROMA CLIENT
@@ -253,6 +255,12 @@ async def full_monitor():
     }
     return JSONResponse(content=response)
 
+@router.get("/status")
+async def status_monitor():
+    """
+    Endpoint status check simple
+    """
+    return JSONResponse({"status": "ok", "endpoint": "monitor"})
 
 @router.get("/health")
 async def health_monitor():

@@ -11,6 +11,11 @@ def generate_doc(prompt: str = Form(...), template: str = Form("default")):
         return JSONResponse({"status": "success", "file_path": doc_path})
     except Exception as e:
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+
+@router.get("/status")
+async def status_generate():
+    return JSONResponse({"status": "ok", "endpoint": "generate"})
+
 # Endpoint health
 @router.get("/health")
 async def health_generate():

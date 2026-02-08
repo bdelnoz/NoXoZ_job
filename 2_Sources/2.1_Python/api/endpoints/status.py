@@ -11,6 +11,15 @@ def status():
     try:
         conn = sqlite3.connect(METADATA_DB)
         cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS documents (
+                id TEXT PRIMARY KEY,
+                filename TEXT,
+                source TEXT,
+                ingestion_date TEXT
+            )
+        """)
+        conn.commit()
         cursor.execute("SELECT COUNT(*) FROM documents")
         count = cursor.fetchone()[0]
         conn.close()
@@ -21,6 +30,11 @@ def status():
         })
     except Exception as e:
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+
+@router.get("/status")
+def status_alias():
+    return status()
+
 # Endpoint health
 @router.get("/health")
 async def health_status():
