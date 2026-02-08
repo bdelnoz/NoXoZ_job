@@ -23,7 +23,7 @@ Date: 2026-02-08 00:25:37
 3. Start external services:
    - `docker-compose up -d` (starts Ollama + Chroma containers only)
 4. Start FastAPI application (manual):
-   - `uvicorn 2_Sources.2.1_Python.main_agent:app --host 0.0.0.0 --port <PORT>`
+   - `uvicorn main_agent:app --app-dir 2_Sources/2.1_Python --host 0.0.0.0 --port <PORT>`
 
 ## Known gaps / UNKNOWN
 - The repository does not provide a single, validated installation script.
