@@ -79,32 +79,10 @@ async def manual_operation():
                 const status = document.getElementById("status");
                 const details = document.getElementById("details");
                 const stepList = document.getElementById("stepList");
-                const fileTypeSelect = document.getElementById("fileType");
-                const operationModeSelect = document.getElementById("operationMode");
-                const fileInput = document.getElementById("fileInput");
-
-                function applyQueryParams() {
-                    const params = new URLSearchParams(window.location.search);
-                    const fileName = params.get("file");
-                    const fileType = params.get("fileType");
-                    const operationMode = params.get("operationMode");
-
-                    if (fileType && fileTypeSelect.querySelector(`option[value="${fileType}"]`)) {
-                        fileTypeSelect.value = fileType;
-                    }
-                    if (operationMode && operationModeSelect.querySelector(`option[value="${operationMode}"]`)) {
-                        operationModeSelect.value = operationMode;
-                    }
-
-                    if (fileName) {
-                        status.textContent = "Statut : prêt (fichier pré-sélectionné via URL).";
-                        details.textContent = `Détails : fichier=${fileName}, type=${fileTypeSelect.value}, mode=${operationModeSelect.value}.`;
-                        stepList.innerHTML = "<div>Le fichier doit être choisi manuellement avant upload.</div>";
-                    }
-                }
 
                 form.addEventListener("submit", async (event) => {
                     event.preventDefault();
+                    const fileInput = document.getElementById("fileInput");
                     if (!fileInput.files.length) {
                         status.textContent = "Statut : sélectionne un fichier.";
                         return;
@@ -118,6 +96,8 @@ async def manual_operation():
 
                     status.textContent = "Statut : upload en cours...";
                     stepList.innerHTML = "<div>En attente des étapes...</div>";
+
+                    status.textContent = "Statut : upload en cours...";
                     try {
                         const response = await fetch("/api/upload", {
                             method: "POST",
@@ -168,10 +148,12 @@ async def manual_operation():
                         status.textContent = "Statut : erreur réseau.";
                         details.textContent = `Détails : ${err}`;
                         stepList.innerHTML = "<div style='color:#ff6b6b;'>Échec: erreur réseau.</div>";
+                        const result = await response.json();
+                        status.textContent = `Statut : ${result.status} - ${result.filename || ""}`;
+                    } catch (err) {
+                        status.textContent = `Statut : erreur - ${err}`;
                     }
                 });
-
-                applyQueryParams();
             </script>
         </body>
         </html>
