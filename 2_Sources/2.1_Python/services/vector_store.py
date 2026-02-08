@@ -243,6 +243,7 @@ def init_sqlite() -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
             sha256 TEXT,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
+            last_seen_at TEXT,
             version INTEGER NOT NULL DEFAULT 1,
             status TEXT NOT NULL DEFAULT 'ingested'
         )
@@ -275,6 +276,7 @@ def init_sqlite() -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
 
         _sqlite_add_column(cursor, "files", "created_at", "created_at TEXT")
         _sqlite_add_column(cursor, "files", "updated_at", "updated_at TEXT")
+        _sqlite_add_column(cursor, "files", "last_seen_at", "last_seen_at TEXT")
 
         _sqlite_add_column(cursor, "files", "version", "version INTEGER NOT NULL DEFAULT 1")
         _sqlite_add_column(cursor, "files", "status", "status TEXT NOT NULL DEFAULT 'ingested'")
@@ -287,6 +289,8 @@ def init_sqlite() -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
             cursor.execute("UPDATE files SET created_at = COALESCE(created_at, ?) WHERE created_at IS NULL OR created_at = '';", (now,))
         if "updated_at" in cols:
             cursor.execute("UPDATE files SET updated_at = COALESCE(updated_at, ?) WHERE updated_at IS NULL OR updated_at = '';", (now,))
+        if "last_seen_at" in cols:
+            cursor.execute("UPDATE files SET last_seen_at = COALESCE(last_seen_at, ?) WHERE last_seen_at IS NULL OR last_seen_at = '';", (now,))
         if "original_filename" in cols:
             cursor.execute(
                 "UPDATE files SET original_filename = COALESCE(original_filename, original_name) "
@@ -364,16 +368,27 @@ def upsert_file_record(
     now = datetime.now(timezone.utc).isoformat()
     cols = _sqlite_table_columns(cursor, "files")
     has_original_filename = "original_filename" in cols
+    has_last_seen_at = "last_seen_at" in cols
 
     cursor.execute("SELECT version FROM files WHERE file_id = ?;", (file_id,))
     row = cursor.fetchone()
 
     if row is None:
-        if has_original_filename:
+        if has_original_filename and has_last_seen_at:
+            cursor.execute("""
+                INSERT INTO files (file_id, original_name, original_filename, stored_path, ext, size_bytes, sha256, created_at, updated_at, last_seen_at, version, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (file_id, original_name, original_name, stored_path, ext, size_bytes, sha256, now, now, now, 1, status))
+        elif has_original_filename:
             cursor.execute("""
                 INSERT INTO files (file_id, original_name, original_filename, stored_path, ext, size_bytes, sha256, created_at, updated_at, version, status)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (file_id, original_name, original_name, stored_path, ext, size_bytes, sha256, now, now, 1, status))
+        elif has_last_seen_at:
+            cursor.execute("""
+                INSERT INTO files (file_id, original_name, stored_path, ext, size_bytes, sha256, created_at, updated_at, last_seen_at, version, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (file_id, original_name, stored_path, ext, size_bytes, sha256, now, now, now, 1, status))
         else:
             cursor.execute("""
                 INSERT INTO files (file_id, original_name, stored_path, ext, size_bytes, sha256, created_at, updated_at, version, status)
@@ -382,12 +397,24 @@ def upsert_file_record(
     else:
         current_version = int(row[0]) if row[0] is not None else 1
         new_version = (current_version + 1) if bump_version else current_version
-        if has_original_filename:
+        if has_original_filename and has_last_seen_at:
+            cursor.execute("""
+                UPDATE files
+                SET original_name = ?, original_filename = ?, stored_path = ?, ext = ?, size_bytes = ?, sha256 = ?, updated_at = ?, last_seen_at = ?, version = ?, status = ?
+                WHERE file_id = ?
+            """, (original_name, original_name, stored_path, ext, size_bytes, sha256, now, now, new_version, status, file_id))
+        elif has_original_filename:
             cursor.execute("""
                 UPDATE files
                 SET original_name = ?, original_filename = ?, stored_path = ?, ext = ?, size_bytes = ?, sha256 = ?, updated_at = ?, version = ?, status = ?
                 WHERE file_id = ?
             """, (original_name, original_name, stored_path, ext, size_bytes, sha256, now, new_version, status, file_id))
+        elif has_last_seen_at:
+            cursor.execute("""
+                UPDATE files
+                SET original_name = ?, stored_path = ?, ext = ?, size_bytes = ?, sha256 = ?, updated_at = ?, last_seen_at = ?, version = ?, status = ?
+                WHERE file_id = ?
+            """, (original_name, stored_path, ext, size_bytes, sha256, now, now, new_version, status, file_id))
         else:
             cursor.execute("""
                 UPDATE files
