@@ -26,6 +26,7 @@ import os
 import json
 import hashlib
 import sqlite3
+import time
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 from datetime import datetime, timezone
@@ -213,7 +214,10 @@ def init_sqlite() -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
     Initialise SQLite et applique des migrations AUTOMATIQUES si l'ancienne base
     existe avec un schéma incomplet (ex: pas de colonne updated_at).
     """
-    conn = sqlite3.connect(METADATA_DB)
+    conn = sqlite3.connect(METADATA_DB, timeout=30)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA busy_timeout = 30000;")
+    conn.execute("PRAGMA foreign_keys = ON;")
     cursor = conn.cursor()
 
     # --------------------------------------------------------------------------
@@ -253,6 +257,7 @@ def init_sqlite() -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
     if _sqlite_table_exists(cursor, "files"):
         # Ajoute les colonnes manquantes (sinon: "no such column: updated_at", etc.)
         _sqlite_add_column(cursor, "files", "original_name", "original_name TEXT")
+        _sqlite_add_column(cursor, "files", "original_filename", "original_filename TEXT")
         _sqlite_add_column(cursor, "files", "stored_path", "stored_path TEXT")
         _sqlite_add_column(cursor, "files", "ext", "ext TEXT")
         _sqlite_add_column(cursor, "files", "size_bytes", "size_bytes INTEGER")
@@ -272,6 +277,11 @@ def init_sqlite() -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
             cursor.execute("UPDATE files SET created_at = COALESCE(created_at, ?) WHERE created_at IS NULL OR created_at = '';", (now,))
         if "updated_at" in cols:
             cursor.execute("UPDATE files SET updated_at = COALESCE(updated_at, ?) WHERE updated_at IS NULL OR updated_at = '';", (now,))
+        if "original_filename" in cols:
+            cursor.execute(
+                "UPDATE files SET original_filename = COALESCE(original_filename, original_name) "
+                "WHERE original_filename IS NULL OR original_filename = '';"
+            )
 
     # --------------------------------------------------------------------------
     # MIGRATIONS: DOCUMENTS (si table existante ancienne / incomplète)
@@ -342,23 +352,38 @@ def upsert_file_record(
     - bump_version=True => version = version+1 si déjà présent
     """
     now = datetime.now(timezone.utc).isoformat()
+    cols = _sqlite_table_columns(cursor, "files")
+    has_original_filename = "original_filename" in cols
 
     cursor.execute("SELECT version FROM files WHERE file_id = ?;", (file_id,))
     row = cursor.fetchone()
 
     if row is None:
-        cursor.execute("""
-            INSERT INTO files (file_id, original_name, stored_path, ext, size_bytes, sha256, created_at, updated_at, version, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (file_id, original_name, stored_path, ext, size_bytes, sha256, now, now, 1, status))
+        if has_original_filename:
+            cursor.execute("""
+                INSERT INTO files (file_id, original_name, original_filename, stored_path, ext, size_bytes, sha256, created_at, updated_at, version, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (file_id, original_name, original_name, stored_path, ext, size_bytes, sha256, now, now, 1, status))
+        else:
+            cursor.execute("""
+                INSERT INTO files (file_id, original_name, stored_path, ext, size_bytes, sha256, created_at, updated_at, version, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (file_id, original_name, stored_path, ext, size_bytes, sha256, now, now, 1, status))
     else:
         current_version = int(row[0]) if row[0] is not None else 1
         new_version = (current_version + 1) if bump_version else current_version
-        cursor.execute("""
-            UPDATE files
-            SET original_name = ?, stored_path = ?, ext = ?, size_bytes = ?, sha256 = ?, updated_at = ?, version = ?, status = ?
-            WHERE file_id = ?
-        """, (original_name, stored_path, ext, size_bytes, sha256, now, new_version, status, file_id))
+        if has_original_filename:
+            cursor.execute("""
+                UPDATE files
+                SET original_name = ?, original_filename = ?, stored_path = ?, ext = ?, size_bytes = ?, sha256 = ?, updated_at = ?, version = ?, status = ?
+                WHERE file_id = ?
+            """, (original_name, original_name, stored_path, ext, size_bytes, sha256, now, new_version, status, file_id))
+        else:
+            cursor.execute("""
+                UPDATE files
+                SET original_name = ?, stored_path = ?, ext = ?, size_bytes = ?, sha256 = ?, updated_at = ?, version = ?, status = ?
+                WHERE file_id = ?
+            """, (original_name, stored_path, ext, size_bytes, sha256, now, new_version, status, file_id))
 
 
 def delete_file_records(cursor: sqlite3.Cursor, file_id: str):
@@ -368,6 +393,23 @@ def delete_file_records(cursor: sqlite3.Cursor, file_id: str):
     """
     cursor.execute("DELETE FROM documents WHERE file_id = ?;", (file_id,))
     cursor.execute("DELETE FROM files WHERE file_id = ?;", (file_id,))
+
+
+def _run_sqlite_with_retry(operation, max_retries: int = 6, base_delay: float = 0.2):
+    """
+    Exécute une opération SQLite avec retry si "database is locked".
+    """
+    last_err = None
+    for attempt in range(max_retries):
+        try:
+            return operation()
+        except sqlite3.OperationalError as exc:
+            if "database is locked" not in str(exc).lower():
+                raise
+            last_err = exc
+            time.sleep(base_delay * (2 ** attempt))
+    if last_err is not None:
+        raise last_err
 
 
 # ==============================================================================
@@ -419,7 +461,6 @@ def ingest_file(
       - si même file_id reingesté / reuploadé => version++ dans files
     """
     client, collection = init_chroma()
-    conn, cursor = init_sqlite()
 
     # --- identification fichier ---
     p = Path(file_path)
@@ -427,33 +468,6 @@ def ingest_file(
     size_bytes = p.stat().st_size if p.exists() else 0
     file_sha = sha256_file(str(p))
     file_id = file_sha  # stable
-
-    # --- upsert metadata file ---
-    upsert_file_record(
-        cursor=cursor,
-        file_id=file_id,
-        original_name=p.name,
-        stored_path=str(p),
-        ext=ext,
-        size_bytes=size_bytes,
-        sha256=file_sha,
-        status="ingesting",
-        bump_version=bump_version,
-    )
-    conn.commit()
-
-    # --- (optionnel) purge avant reingest ---
-    if reingest:
-        try:
-            cursor.execute("SELECT chunk_id FROM documents WHERE file_id = ? AND chunk_id IS NOT NULL;", (file_id,))
-            existing = [r[0] for r in cursor.fetchall() if r and r[0]]
-            if existing:
-                collection.delete(ids=existing)
-        except Exception:
-            pass
-
-        cursor.execute("DELETE FROM documents WHERE file_id = ?;", (file_id,))
-        conn.commit()
 
     # --- extraction texte ---
     texts = load_file_text(str(p))
@@ -483,22 +497,58 @@ def ingest_file(
     except Exception:
         pass
 
-    # --- write SQLite documents ---
-    now = datetime.now(timezone.utc).isoformat()
-    for i, chunk_id in enumerate(chunk_ids):
-        cursor.execute("""
-            INSERT OR REPLACE INTO documents (chunk_id, file_id, chunk_index, source_path, ingestion_date)
-            VALUES (?, ?, ?, ?, ?)
-        """, (chunk_id, file_id, i, str(p), now))
+    def _write_sqlite():
+        conn, cursor = init_sqlite()
+        try:
+            # --- upsert metadata file ---
+            upsert_file_record(
+                cursor=cursor,
+                file_id=file_id,
+                original_name=p.name,
+                stored_path=str(p),
+                ext=ext,
+                size_bytes=size_bytes,
+                sha256=file_sha,
+                status="ingesting",
+                bump_version=bump_version,
+            )
+            conn.commit()
 
-    # --- finalize status ---
-    cursor.execute(
-        "UPDATE files SET status = ?, updated_at = ? WHERE file_id = ?;",
-        ("ingested", now, file_id),
-    )
+            # --- (optionnel) purge avant reingest ---
+            if reingest:
+                try:
+                    cursor.execute(
+                        "SELECT chunk_id FROM documents WHERE file_id = ? AND chunk_id IS NOT NULL;",
+                        (file_id,),
+                    )
+                    existing = [r[0] for r in cursor.fetchall() if r and r[0]]
+                    if existing:
+                        collection.delete(ids=existing)
+                except Exception:
+                    pass
 
-    conn.commit()
-    conn.close()
+                cursor.execute("DELETE FROM documents WHERE file_id = ?;", (file_id,))
+                conn.commit()
+
+            # --- write SQLite documents ---
+            now = datetime.now(timezone.utc).isoformat()
+            for i, chunk_id in enumerate(chunk_ids):
+                cursor.execute("""
+                    INSERT OR REPLACE INTO documents (chunk_id, file_id, chunk_index, source_path, ingestion_date)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (chunk_id, file_id, i, str(p), now))
+
+            # --- finalize status ---
+            cursor.execute(
+                "UPDATE files SET status = ?, updated_at = ? WHERE file_id = ?;",
+                ("ingested", now, file_id),
+            )
+
+            conn.commit()
+        finally:
+            conn.close()
+
+    _run_sqlite_with_retry(_write_sqlite)
 
     return {
         "status": "ok",
