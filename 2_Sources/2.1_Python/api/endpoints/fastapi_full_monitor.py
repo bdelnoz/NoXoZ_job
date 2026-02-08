@@ -3,6 +3,7 @@
 # Email: bruno.delnoz@protonmail.com
 # Version: v1.0 - 2026-02-07
 # Target: Full health check monitor pour NoXoZ_job affichable sur interface web
+#
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
