@@ -1,0 +1,36 @@
+Loading .env environment variables...
+INFO:     Will watch for changes in these directories: ['/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/2_Sources/2.1_Python/api', '/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/2_Sources/2.1_Python/services']
+INFO:     Uvicorn running on https://127.0.0.1:8443 (Press CTRL+C to quit)
+INFO:     Started reloader process [345449] using WatchFiles
+INFO:     Started server process [345452]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [345452]
+INFO:     Stopping reloader process [345449]
+Loading .env environment variables...
+INFO:     Will watch for changes in these directories: ['/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/2_Sources/2.1_Python/api', '/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/2_Sources/2.1_Python/services']
+INFO:     Uvicorn running on https://127.0.0.1:8443 (Press CTRL+C to quit)
+INFO:     Started reloader process [345559] using WatchFiles
+INFO:     Started server process [345562]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [345562]
+INFO:     Stopping reloader process [345559]
+Loading .env environment variables...
+INFO:     Will watch for changes in these directories: ['/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/2_Sources/2.1_Python/api', '/mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/2_Sources/2.1_Python/services']
+INFO:     Uvicorn running on https://127.0.0.1:8443 (Press CTRL+C to quit)
+INFO:     Started reloader process [345684] using WatchFiles
+INFO:     Started server process [345687]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [345687]
+INFO:     Stopping reloader process [345684]

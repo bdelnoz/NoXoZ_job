@@ -84,15 +84,15 @@ start() {
   else
     exec_cmd="uvicorn"
   fi
-
   nohup $exec_cmd "$APP_MODULE" \
     --host "$HOST" \
     --port "$PORT" \
     --ssl-certfile "$CERT_FILE" \
     --ssl-keyfile "$KEY_FILE" \
     --reload \
+    --reload-dir "$SRC_DIR/api" \
+    --reload-dir "$SRC_DIR/services" \
     > "$LOG_FILE" 2>&1 &
-
   local launch_pid=$!
   echo $launch_pid > "$PID_FILE"
 
