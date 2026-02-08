@@ -1,59 +1,31 @@
-# Test Audit – NoXoZ_job
+# FILENAME: test_audit.md
+# COMPLETE PATH: audit/test_audit.md
+# Auteur: Bruno DELNOZ
+# Email: bruno.delnoz@protonmail.com
+# Version: v1.0
+# Date: 2026-02-08 00:10:31
 
-## Résumé
-- Les tests unitaires Python échouent localement faute de dépendances installées.
-- Le test SQLite échoue car la base `noxoz_metadata.db` n’existe pas dans cet environnement.
-- Le test global FastAPI a été exécuté en **mode simulation** (prévu pour un environnement avec pipenv + services actifs).
+## Détection des frameworks de test
+- Aucun framework (pytest/unittest) détecté.
 
-## Détail des commandes exécutées
+## Exécution des tests si possible
+- Aucun test exécuté (audit sans exécution).
 
-### 1) Test SentenceTransformers
-**Commande**
-```bash
-python 2_Sources/2.1_Python/test_sentence_transfomers.py
-```
-**Résultat**
-```
-ModuleNotFoundError: No module named 'sentence_transformers'
-```
+## Test global minimal
+- Recommandé: `curl -k https://127.0.0.1:8443/api/status/health`.
 
-### 2) Test ChromaDB + embeddings (huffing)
-**Commande**
-```bash
-python 2_Sources/2.1_Python/test_db_huffing.py
-```
-**Résultat**
-```
-ModuleNotFoundError: No module named 'chromadb'
-```
+## Commandes exécutées
+- NONE
 
-### 3) Test SQLite
-**Commande**
-```bash
-bash 8_Scripts/8.1_Init/test_sqlite.sh --exec
-```
-**Résultat**
-```
-[TestSQLite] ERREUR : DB non trouvée à /workspace/3_Data/Metadata/noxoz_metadata.db
-```
+## Résultats bruts
+- NONE
 
-### 4) Test global FastAPI (simulation)
-**Commande**
-```bash
-bash 8_Scripts/8.1_Init/test_fastapi.sh --simulate
-```
-**Résultat**
-```
-[SIMULATE] Actions prévues :
-  - cd /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job
-  - activation pipenv
-  - export PYTHONPATH=2_Sources/2.1_Python
-  - lancement FastAPI (uvicorn)
-  - tests endpoints: /status /generate /upload
-  - logs dans /mnt/data2_78g/Security/scripts/AI_Projects/NoXoZ_job/4_Logs
-```
+## Erreurs rencontrées
+- NONE
 
-## Recommandations
-- Installer les dépendances (`pipenv install` ou `pip install -r requirements.txt`).
-- Vérifier la présence de la base SQLite et des symlinks sous `3_Data/`.
-- Lancer Ollama et Chroma avant les tests d’intégration.
+## Diagnostic
+- Tests absents; seulement scripts manuels.
+
+## Recommandations CI/CD
+- Ajouter pipeline pytest.
+- Ajouter lint (ruff/flake8) et type check (mypy).

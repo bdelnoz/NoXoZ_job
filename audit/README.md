@@ -1,42 +1,58 @@
-# NoXoZ_job – README (audit)
+# FILENAME: README.md
+# COMPLETE PATH: audit/README.md
+# Auteur: Bruno DELNOZ
+# Email: bruno.delnoz@protonmail.com
+# Version: v1.0
+# Date: 2026-02-08 00:10:31
 
-## Résumé
-NoXoZ_job est un agent LLM local (FastAPI + Chroma + SQLite + Ollama) pour ingérer des documents, stocker des embeddings et générer des documents (DOCX) hors ligne.
+## Description du projet
+NoXoZ_job est un agent LLM local orienté génération et gestion de documents professionnels (CV, lettres, emails), avec ingestion multi-format et API FastAPI. Objectif: fonctionnement 100% offline avec stockage local (Chroma + SQLite) et génération via Ollama.
 
-## Composants principaux
-- **API FastAPI** : point d’entrée HTTP (upload, génération, status, monitoring).
-- **Ingestion** : stockage fichiers + embeddings (Chroma) + métadonnées (SQLite).
-- **Génération** : récupération de contexte et génération via Ollama.
-- **Stockage** : répertoires locaux sous `/mnt/data1_100g/agent_llm_local`.
+## Périmètre fonctionnel
+- Ingestion de documents (PDF/DOCX/MD/TXT/JSON/XML).
+- Recherche vectorielle via ChromaDB.
+- Génération de documents via Ollama CLI.
+- API REST FastAPI (upload, generate, status, monitor).
 
-## Arborescence (haut niveau)
-- `1_Documentation/` : documentation générale et technique.
-- `2_Sources/` : code Python (API, services), scripts Bash.
-- `3_Data/` : liens vers modèles et vecteurs.
-- `4_Logs/` : logs d’exécution.
-- `5_Outputs/` : sorties générées.
-- `8_Scripts/` : init, tests, services, utilitaires.
+## Stack technique complète
+- Backend: Python 3, FastAPI, Uvicorn.
+- Vector store: ChromaDB.
+- Embeddings: sentence-transformers, langchain_community.
+- Stockage: SQLite.
+- Génération: Ollama CLI + python-docx.
+- Scripts: Bash (init, services systemd).
+- Conteneurisation: Docker Compose.
 
-## Points d’entrée
-- `2_Sources/2.1_Python/main_agent.py` (FastAPI app).
-- `2_Sources/2.1_Python/api/router.py` (routes).
+## Architecture (résumé)
+- FastAPI expose /api/*.
+- services/* gère ingestion, vector store, génération.
+- Scripts shell démarrent/arrêtent services et init projet.
+Voir ARCHITECTURE.md.
 
-## Dépendances majeures
-- **FastAPI / Uvicorn** (API).
-- **ChromaDB** (vector store).
-- **SQLite** (métadonnées).
-- **LangChain + SentenceTransformers** (embeddings).
-- **Ollama** (LLM local).
+## Prérequis système
+- Linux avec systemd (scripts de service).
+- Python 3.x + pip/pipenv.
+- Ollama installé localement.
+- Accès fichiers /mnt/data1_100g et /mnt/data2_78g (actuellement hardcodé).
 
-## Commandes rapides
-```bash
-# Lancer l’API (via script systemd)
-8_Scripts/8.1_Init/service.fastapi/start_fastapi.sh start
+## Installation rapide (TL;DR)
+1. Installer dépendances Python: `pip install -r requirements.txt`.
+2. Installer Ollama et modèles.
+3. Démarrer FastAPI: `bash 8_Scripts/8.1_Init/service.fastapi/start_fastapi.sh start`.
 
-# Lancer l’API en local (uvicorn direct)
-cd 2_Sources/2.1_Python
-uvicorn main_agent:app --host 127.0.0.1 --port 8443 --reload --ssl-certfile certs/cert.pem --ssl-keyfile certs/key.pem
-```
+## Lancement rapide
+- API: `https://127.0.0.1:8443/api`.
+- Status web: `https://127.0.0.1:8443/api/monitor/web_status`.
 
-## Voir l’audit complet
-Consulter `repo_audit.md`, `correction_audit.md`, `todo_audit.md` et `test_audit.md` dans ce dossier.
+## Liens documentation
+- INSTALL.md
+- USAGE.md
+- TESTING.md
+- DEBUG.md
+- ARCHITECTURE.md
+
+## État du projet
+UNKNOWN (aucun indicateur stable/POC explicite dans le repository).
+
+## Licence
+UNKNOWN
