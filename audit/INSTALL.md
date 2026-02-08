@@ -1,45 +1,35 @@
-# FILENAME: INSTALL.md
-# COMPLETE PATH: audit/INSTALL.md
-# Auteur: Bruno DELNOZ
-# Email: bruno.delnoz@protonmail.com
-# Version: v1.0
-# Date: 2026-02-08 00:10:31
+FILENAME: INSTALL.md
+COMPLETE PATH: ./audit/INSTALL.md
+Auteur: Bruno DELNOZ
+Email: bruno.delnoz@protonmail.com
+Version: v1.0
+Date: 2026-02-08 00:25:37
 
-## Prérequis système détaillés
-- Linux avec systemd (scripts de service).
-- Python 3.x.
-- Ollama installé localement.
-- Accès aux chemins /mnt/data1_100g et /mnt/data2_78g (actuellement hardcodés).
+---
 
-## Dépendances OS
-- curl, sqlite3, ss, pkill, systemctl.
-- Bibliothèques pour python-docx (zip/unzip). (UNKNOWN si déjà installées.)
+# Installation (Audit View)
 
-## Installation des langages
-- Python 3.x via package OS ou pyenv.
+## Prerequisites (observed or implied)
+- Python 3.10+ (repository includes `Pipfile` with Python 3.13 requirement).
+- Local filesystem paths for models and vectors (see `.env`).
+- Ollama installed locally or running via Docker.
+- ChromaDB running (Docker Compose provides a container for Chroma).
 
-## Installation des dépendances projet
-```
-pip install -r requirements.txt
-```
+## Installation steps (documented and inferred)
+1. Create or update `.env` to match local storage paths.
+2. Install Python dependencies:
+   - Option A: `pip install -r requirements.txt`
+   - Option B: `pipenv install` (uses `Pipfile`)
+3. Start external services:
+   - `docker-compose up -d` (starts Ollama + Chroma containers only)
+4. Start FastAPI application (manual):
+   - `uvicorn 2_Sources.2.1_Python.main_agent:app --host 0.0.0.0 --port <PORT>`
 
-## Variables d’environnement
-- CHROMA_PERSIST_DIR (utilisé dans test_db_huffing.py).
-- SENTENCE_TRANSFORMERS_HOME (utilisé dans test_db_huffing.py).
-- Autres variables: UNKNOWN (paths hardcodés dans scripts et services).
+## Known gaps / UNKNOWN
+- The repository does not provide a single, validated installation script.
+- The FastAPI service is not defined in `docker-compose.yml`.
+- The required LLM models (Ollama) are not downloaded by any script in this repository.
+- UI installation instructions are not present.
 
-## Scripts d’installation existants
-- `8_Scripts/8.1_Init/init_project.sh`
-- `8_Scripts/8.1_Init/init_python.sh`
-- `8_Scripts/8.1_Init/init_fastapi.sh`
-- `8_Scripts/8.1_Init/init_sqlite.sh`
-
-## Vérifications post-install
-- Démarrer FastAPI: `bash 8_Scripts/8.1_Init/service.fastapi/start_fastapi.sh start`.
-- Vérifier l’API: `curl -k https://127.0.0.1:8443/api/status/health`.
-- Vérifier monitoring: `curl -k https://127.0.0.1:8443/api/monitor/full`.
-
-## Problèmes fréquents + solutions
-- Erreur chemin /mnt/data1_100g manquant → créer le répertoire ou rendre les chemins configurables.
-- Ollama non installé → installer Ollama et vérifier `ollama run`.
-- Erreurs TLS → régénérer certs ou utiliser HTTP local.
+## Conclusion
+STATUS: SUCCESS

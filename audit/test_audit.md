@@ -1,31 +1,33 @@
-# FILENAME: test_audit.md
-# COMPLETE PATH: audit/test_audit.md
-# Auteur: Bruno DELNOZ
-# Email: bruno.delnoz@protonmail.com
-# Version: v1.0
-# Date: 2026-02-08 00:10:31
+FILENAME: test_audit.md
+COMPLETE PATH: ./audit/test_audit.md
+Auteur: Bruno DELNOZ
+Email: bruno.delnoz@protonmail.com
+Version: v1.0
+Date: 2026-02-08 00:26:04
 
-## Détection des frameworks de test
-- Aucun framework (pytest/unittest) détecté.
+---
 
-## Exécution des tests si possible
-- Aucun test exécuté (audit sans exécution).
+# Tests & Validation
 
-## Test global minimal
-- Recommandé: `curl -k https://127.0.0.1:8443/api/status/health`.
+## Frameworks detected
+- Pytest
 
-## Commandes exécutées
-- NONE
+## Tests discovered
+- `2_Sources/2.1_Python/test_db_huffing.py`
+- `2_Sources/2.1_Python/test_sentence_transfomers.py`
 
-## Résultats bruts
-- NONE
+## Test execution (actual)
+Command executed:
+```bash
+python -m pytest -q
+```
 
-## Erreurs rencontrées
-- NONE
+Result:
+- ERROR during collection: missing `chromadb`.
+- ERROR during collection: missing `sentence_transformers`.
 
-## Diagnostic
-- Tests absents; seulement scripts manuels.
+## Blocking errors
+- Dependencies required by tests are not installed in the current environment.
 
-## Recommandations CI/CD
-- Ajouter pipeline pytest.
-- Ajouter lint (ruff/flake8) et type check (mypy).
+## Conclusion
+STATUS: FAILED
