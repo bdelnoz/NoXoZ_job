@@ -39,9 +39,26 @@ get_real_pid() {
   ss -tlpn 2>/dev/null | grep ":${PORT}" | awk -F'pid=' '{print $2}' | awk -F',' '{print $1}' | head -n1
 }
 
+# Fallback PID lookup when ss cannot see the listener (permissions or startup delay)
+get_uvicorn_pid() {
+  pgrep -f "uvicorn.*${APP_MODULE}.*--port ${PORT}.*--reload" | head -n1
+}
+
+# Resolve PID via listener first, then fallback process lookup
+resolve_pid() {
+  local real_pid
+  real_pid="$(get_real_pid)"
+  if [[ -n "$real_pid" ]]; then
+    echo "$real_pid"
+    return 0
+  fi
+  get_uvicorn_pid
+}
+
 # Vérifie si FastAPI écoute sur le port
 is_running() {
-  local real_pid=$(get_real_pid)
+  local real_pid
+  real_pid="$(resolve_pid)"
   if [[ -n "$real_pid" ]] && kill -0 "$real_pid" 2>/dev/null; then
     return 0
   fi
@@ -79,9 +96,17 @@ start() {
   local launch_pid=$!
   echo $launch_pid > "$PID_FILE"
 
-  sleep 3
-
-  local real_pid=$(get_real_pid)
+  local real_pid=""
+  local waited=0
+  local max_wait=15
+  while [[ $waited -lt $max_wait ]]; do
+    sleep 1
+    real_pid="$(resolve_pid)"
+    if [[ -n "$real_pid" ]] && is_running; then
+      break
+    fi
+    waited=$((waited + 1))
+  done
 
   if [[ -n "$real_pid" ]] && is_running; then
     echo "[INFO] FastAPI démarré avec --reload"
@@ -95,6 +120,8 @@ start() {
   else
     echo "[ERROR] Échec du démarrage"
     echo "[ERROR] Aucun processus détecté sur port $PORT"
+    echo "[ERROR] Dernières lignes du log:"
+    tail -n 50 "$LOG_FILE" || true
     rm -f "$PID_FILE"
     rm -f "$SYSTEMD_PID_FILE"
     exit 1
@@ -102,7 +129,8 @@ start() {
 }
 
 stop() {
-  local real_pid=$(get_real_pid)
+  local real_pid
+  real_pid="$(resolve_pid)"
 
   if [[ -z "$real_pid" ]]; then
     echo "[INFO] Aucun FastAPI actif sur port $PORT"
@@ -122,14 +150,15 @@ stop() {
   # Vérification avec ss -tlpn
   if is_running; then
     echo "[WARN] Process encore actif, kill -9"
-    local stubborn_pid=$(get_real_pid)
+    local stubborn_pid
+    stubborn_pid="$(resolve_pid)"
     pkill -9 -P "$stubborn_pid" 2>/dev/null || true
     kill -9 "$stubborn_pid" 2>/dev/null || true
     sleep 1
   fi
 
   # Cleanup final
-  pkill -9 -f "uvicorn.*${APP_MODULE}" 2>/dev/null || true
+  pkill -9 -f "uvicorn.*${APP_MODULE}.*--reload" 2>/dev/null || true
 
   rm -f "$PID_FILE"
   rm -f "$SYSTEMD_PID_FILE"
@@ -150,7 +179,8 @@ restart() {
 }
 
 status() {
-  local real_pid=$(get_real_pid)
+  local real_pid
+  real_pid="$(resolve_pid)"
 
   if [[ -n "$real_pid" ]] && is_running; then
     echo "[STATUS] FastAPI actif avec --reload"
@@ -171,7 +201,8 @@ status() {
 # Mise à jour PID systemd après démarrage (appelé par ExecStartPost)
 update_pid() {
   sleep 3
-  local real_pid=$(get_real_pid)
+  local real_pid
+  real_pid="$(resolve_pid)"
 
   if [[ -n "$real_pid" ]]; then
     echo "$real_pid" > "$SYSTEMD_PID_FILE"
